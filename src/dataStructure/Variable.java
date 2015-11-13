@@ -17,7 +17,7 @@ public class Variable {
 	private State state;
 
 	/* Variable ID (range from 1 to n) */
-	private int id;
+	private final int id;
 
 	/* Clauses containing this variable */
 	private Vector<Clause> adjacencyList;
@@ -29,7 +29,9 @@ public class Variable {
 	 *            ID of the variable
 	 */
 	public Variable(int id) {
-		// TODO: To implement!
+		this.id  = id;
+		this.state = State.OPEN;
+		this.adjacencyList = new Vector<>();
 	}
 
 	/**
@@ -67,7 +69,7 @@ public class Variable {
 	 *            value to be assigned
 	 */
 	public void assign(boolean val) {
-		// TODO: To implement!
+		this.state = val ? State.TRUE : State.FALSE;
 	}
 
 	@Override
