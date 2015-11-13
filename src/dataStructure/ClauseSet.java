@@ -36,8 +36,27 @@ public class ClauseSet {
 	 * @return true, if an empty clause exists, otherwise false.
 	 */
 	public boolean unitPropagation() {
-		// TODO: to implement!
-		return false;
+		Clause unit;
+		while ((unit = nextUnit()) != null) {
+			Integer literal = unit.getLiterals().get(0);
+			boolean polarity = unit.getPolarity(0);
+			variables.get(literal).assign(polarity);
+			clauses.remove(unit);
+			for (int i = this.clauses.size() -1; i >= 0; --i) {
+				Clause clause = this.clauses.get(i);
+				for (int j = clause.getLiterals().size() - 1; j >= 0; --j) {
+					Integer clauseLiteral = clause.getLiterals().get(j);
+					if (literal.intValue() == clauseLiteral.intValue()) {
+						this.clauses.remove(i);
+						break;
+					} else if (literal.intValue() == -clauseLiteral.intValue()) {
+						clause.getLiterals().remove(j);
+						// TODO: Should we break here? Is it possible to have one literal two times in one clause?
+					}
+				}
+			}
+		}
+		return containsEmpty();
 	}
 
 	/**
@@ -46,7 +65,11 @@ public class ClauseSet {
 	 * @return next unit clause, if one exists, otherwise null
 	 */
 	private Clause nextUnit() {
-		// TODO: to implement!
+		for (Clause clause : clauses) {
+			if (clause.isUnit()) {
+				return clause;
+			}
+		}
 		return null;
 	}
 
@@ -56,7 +79,11 @@ public class ClauseSet {
 	 * @return true, if an empty clause exists, otherwise false.
 	 */
 	private boolean containsEmpty() {
-		// TODO: to implement!
+		for (Clause clause : clauses) {
+			if (clause.isEmpty()) {
+				return true;
+			}
+		}
 		return false;
 	}
 
