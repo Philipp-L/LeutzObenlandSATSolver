@@ -3,6 +3,8 @@ package dataStructure;
 import java.util.HashMap;
 import java.util.Vector;
 
+import dataStructure.Variable.State;
+
 /**
  * A clause.
  * 
@@ -25,7 +27,9 @@ public class Clause {
 	 * @param variables
 	 */
 	public Clause(Vector<Integer> literals, HashMap<Integer, Variable> variables) {
-		// TODO: To implement!
+		this.literals = literals;
+		this.numUnassigned = literals.size();
+		this.sat = false;
 	}
 
 	/**
@@ -82,7 +86,11 @@ public class Clause {
 	 * @return an unassigned literal, if one exists, 0 otherwise
 	 */
 	public int getUnassigned(HashMap<Integer, Variable> variables) {
-		// TODO: To implement!
+		for (Integer literal : variables.keySet()) {
+			if (variables.get(literal).getState() == State.OPEN) {
+				return literal;
+			}
+		}
 		return 0;
 	}
 
@@ -92,8 +100,7 @@ public class Clause {
 	 * @return true if this clause is unit, otherwise false
 	 */
 	public boolean isUnit() {
-		// TODO: To implement!
-		return false;
+		return size() == 1;
 	}
 
 	/**
@@ -102,8 +109,7 @@ public class Clause {
 	 * @return true if this clause is satisfied, otherwise false
 	 */
 	public boolean isSat() {
-		// TODO: To implement!
-		return false;
+		return sat;
 	}
 
 	/**
@@ -112,8 +118,7 @@ public class Clause {
 	 * @return true if this clause is empty, otherwise false
 	 */
 	public boolean isEmpty() {
-		// TODO: To implement!
-		return false;
+		return literals.isEmpty();
 	}
 
 	/**
@@ -124,7 +129,8 @@ public class Clause {
 	 * @return true, if variable is positive within this clause, otherwise false
 	 */
 	public boolean getPolarity(int num) {
-		return literals.contains(num);
+		Integer literal = literals.get(num);
+		return literal > 0;
 	}
 
 	/**
