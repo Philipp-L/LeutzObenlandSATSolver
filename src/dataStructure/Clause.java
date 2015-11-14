@@ -110,9 +110,12 @@ public class Clause {
 		for (Integer integer : literals) {
 			if (variables.get(Math.abs(integer)).getState() == Variable.State.OPEN) {
 				++numberOfOpenLiterals;
+				if(numberOfOpenLiterals >= 2){
+					return false;
+				}
 			}
 		}
-		return numberOfOpenLiterals == 1;
+		return true;
 	}
 
 	/**
@@ -149,13 +152,12 @@ public class Clause {
 		if (literals.isEmpty()) {
 			return true;
 		}
-		int numberOfOpenLiterals = 0;
 		for (Integer literal : literals) {
 			if (variables.get(Math.abs(literal)).getState() == Variable.State.OPEN) {
-				++numberOfOpenLiterals;
+				return false;
 			}
 		}
-		return numberOfOpenLiterals == 0;
+		return true;
 	}
 
 	/**

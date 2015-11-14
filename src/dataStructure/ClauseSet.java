@@ -28,6 +28,13 @@ public class ClauseSet {
 	 */
 	public ClauseSet(String filePath) {
 		// TODO: to implement!
+		// alle klauseln erstellen
+		// alle Variablen erstellen 
+		// für jede klausel
+		// 		Für jedes Literal der KLause
+		//			Literale in die Listen schreiben
+		//			Verknüpfung literal -> variable in die Hashmap
+		// 			aktuelle klausel der adjazenzliste der variable hinzufügen 
 	}
 
 	/**
