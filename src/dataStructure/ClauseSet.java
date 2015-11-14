@@ -31,21 +31,14 @@ public class ClauseSet {
 	}
 
 	/**
-	 * Creates a ClauseSet from a some Clauses.
-	 * For testing.
+	 * Creates a ClauseSet from a some Clauses. For testing.
+	 * 
 	 * @param clauses
 	 */
-	public ClauseSet(Clause... clauses) {
+	public ClauseSet(HashMap<Integer, Variable> variables, Clause... clauses) {
 		this.clauses = new Vector<>(Arrays.asList(clauses));
-		this.variables = new HashMap<>();
-		for (Clause clause : clauses) {
-			for (Integer literal : clause.getLiterals()) {
-				if (!variables.containsKey(Math.abs(literal))) {
-					Variable variable = new Variable(Math.abs(literal));
-					variables.put(Math.abs(literal), variable);
-				}
-			}
-		}
+		this.variables = variables;
+		this.varNum = variables.size();
 	}
 
 	/**
@@ -57,28 +50,9 @@ public class ClauseSet {
 	public boolean unitPropagation() {
 		Clause unit;
 		while ((unit = nextUnit()) != null) {
-			Integer literal = unit.getLiterals().get(0);
-			boolean polarity = unit.getPolarity(0);
-			variables.get(literal).assign(polarity);
-			unit.setSat(true);
-			clauses.remove(unit);
-			for (int i = this.clauses.size() - 1; i >= 0; --i) {
-				Clause clause = this.clauses.get(i);
-				for (int j = clause.getLiterals().size() - 1; j >= 0; --j) {
-					Integer clauseLiteral = clause.getLiterals().get(j);
-					if (literal.intValue() == clauseLiteral.intValue()) {
-						clause.setSat(true);
-						clause.setNumUnassigned(clause.getNumUnassigned() -1);
-						this.clauses.remove(i);
-						break;
-					} else if (literal.intValue() == -clauseLiteral.intValue()) {
-						clause.getLiterals().remove(j);
-						clause.setNumUnassigned(clause.getNumUnassigned() -1);
-						// TODO: Should we break here? Is it possible to have
-						// one literal two times in one clause?
-					}
-				}
-			}
+			Integer literal = unit.getUnassigned(variables);
+			boolean polarity = unit.getPolarity(literal);
+			variables.get(Math.abs(literal)).assign(polarity);
 		}
 		return containsEmpty();
 	}
@@ -105,7 +79,6 @@ public class ClauseSet {
 	private boolean containsEmpty() {
 		for (Clause clause : clauses) {
 			if (clause.isEmpty()) {
-				clause.setSat(false);
 				return true;
 			}
 		}

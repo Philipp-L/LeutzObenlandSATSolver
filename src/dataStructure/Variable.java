@@ -29,7 +29,7 @@ public class Variable {
 	 *            ID of the variable
 	 */
 	public Variable(int id) {
-		this.id  = id;
+		this.id = id;
 		this.state = State.OPEN;
 		this.adjacencyList = new Vector<>();
 	}
@@ -69,7 +69,15 @@ public class Variable {
 	 *            value to be assigned
 	 */
 	public void assign(boolean val) {
+		if (this.state == State.OPEN) {
+			for (Clause clause : adjacencyList) {
+				clause.setNumUnassigned(clause.getNumUnassigned() - 1);
+			}
+		}
 		this.state = val ? State.TRUE : State.FALSE;
+		for (Clause clause : adjacencyList) {
+			clause.checkSat();
+		}
 	}
 
 	@Override

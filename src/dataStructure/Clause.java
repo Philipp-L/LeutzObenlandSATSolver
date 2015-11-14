@@ -19,6 +19,8 @@ public class Clause {
 	/* Current state of satisfaction */
 	private boolean sat;
 
+	HashMap<Integer, Variable> variables;
+
 	/**
 	 * Creates a new clause with the given literals.
 	 * 
@@ -28,6 +30,7 @@ public class Clause {
 	 */
 	public Clause(Vector<Integer> literals, HashMap<Integer, Variable> variables) {
 		this.literals = literals;
+		this.variables = variables;
 		this.numUnassigned = literals.size();
 		this.sat = false;
 	}
@@ -86,8 +89,8 @@ public class Clause {
 	 * @return an unassigned literal, if one exists, 0 otherwise
 	 */
 	public int getUnassigned(HashMap<Integer, Variable> variables) {
-		for (Integer literal : variables.keySet()) {
-			if (variables.get(literal).getState() == State.OPEN) {
+		for (Integer literal : literals) {
+			if (variables.get(Math.abs(literal)).getState() == State.OPEN) {
 				return literal;
 			}
 		}
@@ -100,7 +103,16 @@ public class Clause {
 	 * @return true if this clause is unit, otherwise false
 	 */
 	public boolean isUnit() {
-		return size() == 1;
+		if (isSat()) {
+			return false;
+		}
+		int numberOfOpenLiterals = 0;
+		for (Integer integer : literals) {
+			if (variables.get(Math.abs(integer)).getState() == Variable.State.OPEN) {
+				++numberOfOpenLiterals;
+			}
+		}
+		return numberOfOpenLiterals == 1;
 	}
 
 	/**
@@ -112,13 +124,38 @@ public class Clause {
 		return sat;
 	}
 
+	protected void checkSat() {
+		for (Integer literal : literals) {
+			Variable variable = variables.get(Math.abs(literal));
+			if (getPolarity(literal) && variable.getState() == Variable.State.TRUE) {
+				sat = true;
+				break;
+			} else if (!getPolarity(literal) && variable.getState() == Variable.State.FALSE) {
+				sat = true;
+				break;
+			} 
+		}
+	}
+
 	/**
 	 * Returns the current empty state of this clause.
 	 * 
 	 * @return true if this clause is empty, otherwise false
 	 */
 	public boolean isEmpty() {
-		return literals.isEmpty();
+		if (isSat()) {
+			return false;
+		}
+		if (literals.isEmpty()) {
+			return true;
+		}
+		int numberOfOpenLiterals = 0;
+		for (Integer literal : literals) {
+			if (variables.get(Math.abs(literal)).getState() == Variable.State.OPEN) {
+				++numberOfOpenLiterals;
+			}
+		}
+		return numberOfOpenLiterals == 0;
 	}
 
 	/**
@@ -129,8 +166,7 @@ public class Clause {
 	 * @return true, if variable is positive within this clause, otherwise false
 	 */
 	public boolean getPolarity(int num) {
-		Integer literal = literals.get(num);
-		return literal > 0;
+		return num > 0;
 	}
 
 	/**
