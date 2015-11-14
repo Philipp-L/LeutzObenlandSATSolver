@@ -2,6 +2,7 @@ package dataStructure;
 
 import static org.junit.Assert.*;
 
+import java.io.IOException;
 import java.util.Arrays;
 import java.util.HashMap;
 import java.util.Vector;
@@ -39,16 +40,29 @@ public class ClauseSetTests {
 	public void testUnitPropergation_Success() {
 		ClauseSet set = new ClauseSet(variables, c1, c2);
 		assertFalse(set.unitPropagation());
-		
+
 		System.out.println(set);
 	}
 
 	@Test
-
 	public void testUnitPropergation_Failure() {
 		ClauseSet set = new ClauseSet(variables, c1, c2, c3);
 		assertTrue(set.unitPropagation());
-		
+
 		System.out.println(set);
+	}
+
+	@Test
+	public void testUnitPropergation_Formula01() throws IOException {
+		ClauseSet clauseSet = new ClauseSet("formula/formula01.cnf");
+		System.out.println(clauseSet);
+		assertTrue(clauseSet.unitPropagation());
+	}
+
+	@Test
+	public void testUnitPropergation_Formula02() throws IOException {
+		ClauseSet clauseSet = new ClauseSet("formula/formula02.cnf");
+		System.out.println(clauseSet);
+		assertTrue(clauseSet.unitPropagation());
 	}
 }

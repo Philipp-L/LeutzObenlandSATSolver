@@ -1,8 +1,11 @@
 package dataStructure;
 
+import java.io.IOException;
 import java.util.Arrays;
 import java.util.HashMap;
 import java.util.Vector;
+
+import parser.DimacsParser;
 
 //import praxisblatt02.parser.DIMACSReader;
 
@@ -25,9 +28,33 @@ public class ClauseSet {
 	 * 
 	 * @param filePath
 	 *            file path of the DIMACS file.
+	 * @throws IOException
 	 */
-	public ClauseSet(String filePath) {
-		// TODO: to implement!
+	public ClauseSet(String filePath) throws IOException {
+		DimacsParser dimacsParser = new DimacsParser(filePath);
+		this.varNum = dimacsParser.getNumberOfVariables();
+		this.clauses = new Vector<>(dimacsParser.getNumberOfClauses());
+		this.variables = new HashMap<>(dimacsParser.getNumberOfVariables());
+		Vector<Vector<Integer>> formula = dimacsParser.getFormula();
+		for (Vector<Integer> rawClause : formula) {
+			Clause clause = new Clause(rawClause, variables);
+			this.clauses.add(clause);
+			for (Integer literal : rawClause) {
+				Variable variable = addVariable(literal);
+				variable.getAdjacencyList().add(clause);
+			}
+		}
+	}
+
+	private Variable addVariable(Integer literal) {
+		Variable variable = variables.get(literal);
+		if (variable == null) {
+			int variableId = Math.abs(literal);
+			variable = new Variable(variableId);
+			variables.put(variableId, variable);
+			variables.put(-variableId, variable);
+		}
+		return variable;
 	}
 
 	/**
