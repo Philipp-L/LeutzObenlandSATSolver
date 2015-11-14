@@ -106,13 +106,7 @@ public class Clause {
 		if (isSat()) {
 			return false;
 		}
-		int numberOfOpenLiterals = 0;
-		for (Integer integer : literals) {
-			if (variables.get(Math.abs(integer)).getState() == Variable.State.OPEN) {
-				++numberOfOpenLiterals;
-			}
-		}
-		return numberOfOpenLiterals == 1;
+		return numUnassigned == 1;
 	}
 
 	/**
@@ -133,7 +127,7 @@ public class Clause {
 			} else if (!getPolarity(literal) && variable.getState() == Variable.State.FALSE) {
 				sat = true;
 				break;
-			} 
+			}
 		}
 	}
 
@@ -149,13 +143,7 @@ public class Clause {
 		if (literals.isEmpty()) {
 			return true;
 		}
-		int numberOfOpenLiterals = 0;
-		for (Integer literal : literals) {
-			if (variables.get(Math.abs(literal)).getState() == Variable.State.OPEN) {
-				++numberOfOpenLiterals;
-			}
-		}
-		return numberOfOpenLiterals == 0;
+		return numUnassigned == 0;
 	}
 
 	/**

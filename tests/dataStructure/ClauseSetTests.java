@@ -55,14 +55,16 @@ public class ClauseSetTests {
 	@Test
 	public void testUnitPropergation_Formula01() throws IOException {
 		ClauseSet clauseSet = new ClauseSet("formula/formula01.cnf");
+		boolean hasEmptyClause = clauseSet.unitPropagation();
 		System.out.println(clauseSet);
-		assertTrue(clauseSet.unitPropagation());
+		assertTrue(hasEmptyClause);
 	}
 
 	@Test
 	public void testUnitPropergation_Formula02() throws IOException {
 		ClauseSet clauseSet = new ClauseSet("formula/formula02.cnf");
+		boolean hasEmptyClause = clauseSet.unitPropagation();
 		System.out.println(clauseSet);
-		assertTrue(clauseSet.unitPropagation());
+		assertFalse(hasEmptyClause);
 	}
 }

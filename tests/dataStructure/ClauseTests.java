@@ -27,6 +27,14 @@ public class ClauseTests {
 		variables.put(3, v3);
 		c1 = new Clause(new Vector<>(Arrays.asList(1, 2)), variables);
 		c2 = new Clause(new Vector<>(Arrays.asList(2, 3)), variables);
+		
+
+		v1.getAdjacencyList().add(c1);
+		v1.getAdjacencyList().add(c2);
+		v2.getAdjacencyList().add(c1);
+		v2.getAdjacencyList().add(c2);
+		v3.getAdjacencyList().add(c1);
+		v3.getAdjacencyList().add(c2);
 	}
 
 	@Test
@@ -86,7 +94,7 @@ public class ClauseTests {
 	@Test
 	public void testIsUnit() {
 		assertFalse(c1.isUnit());
-		v1.assign(true);
+		v1.assign(false);
 		assertTrue(c1.isUnit());
 		v1.assign(false);
 		assertTrue(c1.isUnit());
