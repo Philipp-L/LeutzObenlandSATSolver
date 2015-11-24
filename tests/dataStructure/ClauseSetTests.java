@@ -22,48 +22,39 @@ public class ClauseSetTests {
 
 		variables.clear();
 		variables.put(1, v1);
+		variables.put(-1, v1);
 		variables.put(2, v2);
+		variables.put(-2, v2);
 
 		c1 = new Clause(new Vector<>(Arrays.asList(1)), variables);
 		c2 = new Clause(new Vector<>(Arrays.asList(-1, 2)), variables);
 		c3 = new Clause(new Vector<>(Arrays.asList(-1, -2)), variables);
-
-		v1.getAdjacencyList().add(c1);
-		v1.getAdjacencyList().add(c2);
-		v1.getAdjacencyList().add(c3);
-		v2.getAdjacencyList().add(c1);
-		v2.getAdjacencyList().add(c2);
-		v2.getAdjacencyList().add(c3);
-		
-		
 	}
 
 	/**
-	 * Should be null, since there are no empty clauses and the clauses should be resolved
+	 * Should be null, since there are no empty clauses and the clauses should
+	 * be resolved
 	 */
 	@Test
 	public void testUnitPropergation_Success() {
 		ClauseSet set = new ClauseSet(variables, c1, c2);
 		assertNull(set.unitPropagation());
-		System.out.println(set);
 	}
 
 	/**
-	 * Should not be null, since there is a conflict 
+	 * Should not be null, since there is a conflict
 	 * 
-	 * 
-	 */	@Test
+	 */
+	@Test
 	public void testUnitPropergation_Failure() {
 		ClauseSet set = new ClauseSet(variables, c1, c2, c3);
-		assertNotNull(set.unitPropagation());
-		System.out.println(set);
+		assertEquals(c2, set.unitPropagation());
 	}
 
 	@Test
 	public void testUnitPropergation_Formula01() throws IOException {
 		ClauseSet clauseSet = new ClauseSet("formula/formula01.cnf");
 		Clause hasEmptyClause = clauseSet.unitPropagation();
-		System.out.println(clauseSet);
 		assertNull(hasEmptyClause);
 	}
 
@@ -71,7 +62,6 @@ public class ClauseSetTests {
 	public void testUnitPropergation_Formula02() throws IOException {
 		ClauseSet clauseSet = new ClauseSet("formula/formula02.cnf");
 		Clause hasEmptyClause = clauseSet.unitPropagation();
-		System.out.println(clauseSet);
 		assertNotNull(hasEmptyClause);
 	}
 }

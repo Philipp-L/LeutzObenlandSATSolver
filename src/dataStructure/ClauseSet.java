@@ -1,14 +1,11 @@
 package dataStructure;
 
 import java.io.IOException;
-import java.util.Arrays;
 import java.util.HashMap;
 import java.util.Vector;
 
 import dataStructure.Clause.ClauseState;
 import parser.DimacsParser;
-
-//import praxisblatt02.parser.DIMACSReader;
 
 /**
  * A set of clauses.
@@ -18,10 +15,10 @@ public class ClauseSet {
 	/* Number of variables */
 	private int varNum;
 	/* Clauses of this set */
-	
+
 	private Vector<Clause> clauses;
 
-	/* Unit clauses of this list*/
+	/* Unit clauses of this list */
 	private Vector<Clause> units;
 
 	/* List of all variables */
@@ -36,18 +33,19 @@ public class ClauseSet {
 	 */
 	public ClauseSet(String filePath) throws IOException {
 		DimacsParser dimacsParser = new DimacsParser(filePath);
-		this.varNum = dimacsParser.getNumberOfVariables();
-		this.clauses = new Vector<>(dimacsParser.getNumberOfClauses());
 		this.variables = new HashMap<>(dimacsParser.getNumberOfVariables());
-		Vector<Vector<Integer>> formula = dimacsParser.getFormula();
-		for (Vector<Integer> rawClause : formula) {
+		this.varNum = dimacsParser.getNumberOfVariables();
+		this.units = new Vector<>();
+		
+		Vector<Clause> clauses = new Vector<>(dimacsParser.getNumberOfClauses());
+		for (Vector<Integer> rawClause : dimacsParser.getFormula()) {
 			Clause clause = new Clause(rawClause, variables);
-			this.clauses.add(clause);
+			clauses.add(clause);
 			for (Integer literal : rawClause) {
-				Variable variable = addVariable(literal);
-				variable.getAdjacencyList().add(clause);
+				addVariable(literal);
 			}
 		}
+		init(clauses.toArray(new Clause[this.clauses.size()]));
 	}
 
 	private Variable addVariable(Integer literal) {
@@ -67,22 +65,25 @@ public class ClauseSet {
 	 * @param clauses
 	 */
 	public ClauseSet(HashMap<Integer, Variable> variables, Clause... clauses) {
-		for(Clause currentClause : clauses){
+		this.variables = variables;
+		this.clauses = new Vector<>(clauses.length);
+		this.units = new Vector<>();
+		this.varNum = variables.size();
+		init(clauses);
+	}
+	
+	private void init(Clause[] clauses) {
+		for (Clause currentClause : clauses) {
 			ClauseState currentState = currentClause.initWatch(variables);
-			if(currentState == ClauseState.UNIT){
+			if (currentState == ClauseState.UNIT) {
 				this.units.addElement(currentClause);
 				this.clauses.addElement(currentClause);
-			}
-			
-			else if(currentState == ClauseState.EMPTY){
+			} else if (currentState == ClauseState.EMPTY) {
 				continue;
-			}
-			else{
+			} else {
 				this.clauses.addElement(currentClause);
 			}
 		}
-		this.variables = variables;
-		this.varNum = variables.size();
 	}
 
 	/**
@@ -92,33 +93,22 @@ public class ClauseSet {
 	 * @return null if no empty clause exists or the empty clause.
 	 */
 	public Clause unitPropagation() {
-		if(units.size() == 0){
+		if (units.size() == 0) {
 			return null;
 		}
 		Vector<Clause> newUnits = new Vector<Clause>();
-		for(Clause currentClause : units){
-			int currentUnassigned = currentClause.getNumUnassigned();
-			Clause emptyClause = null;
-			if(currentClause.getPolarity(currentUnassigned)){				
-				 emptyClause = variables.get(currentUnassigned).assign(true, variables, newUnits);
-				 if(emptyClause != null){
-					 return emptyClause;
-				 }					
-			}
-			else{
-				emptyClause = variables.get(currentUnassigned).assign(false, variables, newUnits);
-				if(emptyClause != null){
-					 return emptyClause;
-				 }
+		for (Clause currentClause : units) {
+			int currentUnassigned = currentClause.getUnassigned(variables);
+			boolean polarity = currentClause.getPolarity(currentUnassigned);
+			Clause emptyClause = variables.get(currentUnassigned).assign(polarity, variables, newUnits);
+			if (emptyClause != null) {
+				return emptyClause;
 			}
 		}
-		
-		units.addAll(newUnits);		
+		units.addAll(newUnits);
 		return unitPropagation();
 	}
 
-
-	
 	@Override
 	public String toString() {
 		return clausesToString() + "\n\n" + varsToString();

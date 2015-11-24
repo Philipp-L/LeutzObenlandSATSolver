@@ -3,7 +3,6 @@ package dataStructure;
 import java.util.HashMap;
 import java.util.Vector;
 
-import dataStructure.Clause.ClauseState;
 import dataStructure.Variable.State;
 
 /**
@@ -14,9 +13,11 @@ public class Clause {
 	/* Literals of the clause */
 	private Vector<Integer> literals;
 
-	public enum ClauseState {SAT, EMPTY, UNIT, SUCCESS};
+	public enum ClauseState {
+		SAT, EMPTY, UNIT, SUCCESS
+	};
 
-	/* 2 Beobachtete Literale*/
+	/* 2 Beobachtete Literale */
 	int lit1, lit2;
 
 	HashMap<Integer, Variable> variables;
@@ -43,38 +44,21 @@ public class Clause {
 	}
 
 	/**
-	 * Returns an unassigned Literal, if one of the 2 watched is
-	 * unassigned.
-	 * 
-	 * @return number of the unassigned literal
-	 */
-	public int getNumUnassigned() {
-		if(variables.get(lit1).getState() == State.OPEN){
-			return lit1;
-		}
-		else if (variables.get(lit1).getState() == State.OPEN) {
-			return lit2;
-		}
-		return 0;
-	}
-
-	/**
 	 * Returns an unassigned literal of this clause.
 	 * 
 	 * @param variables
 	 *            variable objects
 	 * @return an unassigned literal, if one exists, 0 otherwise
 	 */
-	/*
+
 	public int getUnassigned(HashMap<Integer, Variable> variables) {
-		for (Integer literal : literals) {
-			if (variables.get(Math.abs(literal)).getState() == State.OPEN) {
-				return literal;
-			}
+		if (variables.get(lit1).getState() == State.OPEN) {
+			return lit1;
+		} else if (variables.get(lit1).getState() == State.OPEN) {
+			return lit2;
 		}
 		return 0;
 	}
-	*/
 
 	/**
 	 * Returns the phase of the variable within this clause.
@@ -97,71 +81,65 @@ public class Clause {
 	}
 
 	/**
-	 * Initialisiert die zu beobachtenden Literale und gibt entsrpechenden 
+	 * Initialisiert die zu beobachtenden Literale und gibt entsrpechenden
 	 * Status der Clauses zurück
 	 * 
 	 * @param variables
 	 * @return
 	 */
-	public ClauseState initWatch(HashMap<Integer, Variable> variables){
+	public ClauseState initWatch(HashMap<Integer, Variable> variables) {
 		int numberOfLiterals = literals.size();
-		if(numberOfLiterals == 0){
+		if (numberOfLiterals == 0) {
 			return ClauseState.EMPTY;
-		}
-		else if(numberOfLiterals == 1){
+		} else if (numberOfLiterals == 1) {
+			lit2 = lit1 = literals.get(0);
+			variables.get(lit1).isWatchedBy(this);
 			return ClauseState.UNIT;
-		}
-
-		else{
+		} else {
 			lit1 = literals.get(0);
 			lit2 = literals.get(1);
+			variables.get(lit1).isWatchedBy(this);
+			variables.get(lit2).isWatchedBy(this);
 			return ClauseState.SUCCESS;
 		}
-
 	}
 
-	public ClauseState reWatch(HashMap<Integer, Variable> variables, int id) {
-		//Swap to be replaced literal to lit1
-		if(id != lit1){
+	public ClauseState reWatch(HashMap<Integer, Variable> variables, int litId) {
+		// Swap to be replaced literal to lit1
+		if (litId != lit1) {
 			lit1 = lit1 ^ lit2;
 			lit2 = lit1 ^ lit2;
 			lit1 = lit1 ^ lit2;
 		}
 
-		//find new watched literal
-		for(int currentLiteral : literals){
-			if((currentLiteral == lit1) || (currentLiteral == lit2)){
+		// find new watched literal
+		for (int currentLiteral : literals) {
+			if ((currentLiteral == lit1) || (currentLiteral == lit2)) {
 				continue;
 			}
 
 			State currentVariableState = variables.get(currentLiteral).getState();
-			boolean currentPolarity = getPolarity(id);
+			boolean currentPolarity = getPolarity(litId);
 
-			if((currentVariableState == State.OPEN) ||
-				(currentVariableState == State.FALSE && !currentPolarity) ||
-				(currentVariableState == State.TRUE && currentPolarity)){
-				lit1 = id;
+			if ((currentVariableState == State.OPEN) || (currentVariableState == State.FALSE && !currentPolarity)
+					|| (currentVariableState == State.TRUE && currentPolarity)) {
+				lit1 = litId;
+				variables.get(lit1).isWatchedBy(this);
 				return ClauseState.SUCCESS;
 			}
-			
+
 		}
 
-		//kein neues watched Literal gefunden
+		// kein neues watched Literal gefunden
 		boolean lit2Polarity = getPolarity(lit2);
 		State lit2State = variables.get(lit2).getState();
-		if((lit2State == State.FALSE && lit2Polarity) ||
-				(lit2State == State.TRUE && !lit2Polarity)){
+		if ((lit2State == State.FALSE && lit2Polarity) || (lit2State == State.TRUE && !lit2Polarity)) {
 			return ClauseState.EMPTY;
-		}
-		if((lit2State == State.FALSE && !lit2Polarity) ||
-				(lit2State == State.TRUE && lit2Polarity)){
+		} else if ((lit2State == State.FALSE && !lit2Polarity) || (lit2State == State.TRUE && lit2Polarity)) {
 			return ClauseState.SAT;
-		}
-		
-		if(lit2State == State.OPEN){
+		} else if (lit2State == State.OPEN) {
 			return ClauseState.UNIT;
 		}
-		
 		return null;
 	}
 
@@ -170,8 +148,7 @@ public class Clause {
 		String res = "{ ";
 		for (Integer i : literals)
 			res += i + " ";
-		return res + "}" + ", sat = " + ", unassigned = " ;
+		return res + "}" + ", sat = " + ", unassigned = ";
 	}
-
 
 }
