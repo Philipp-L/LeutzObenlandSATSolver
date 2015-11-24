@@ -5,6 +5,7 @@ import java.util.Arrays;
 import java.util.HashMap;
 import java.util.Vector;
 
+import dataStructure.Clause.ClauseState;
 import parser.DimacsParser;
 
 //import praxisblatt02.parser.DIMACSReader;
@@ -16,9 +17,12 @@ import parser.DimacsParser;
 public class ClauseSet {
 	/* Number of variables */
 	private int varNum;
-
 	/* Clauses of this set */
+	
 	private Vector<Clause> clauses;
+
+	/* Unit clauses of this list*/
+	private Vector<Clause> units;
 
 	/* List of all variables */
 	private HashMap<Integer, Variable> variables;
@@ -63,7 +67,20 @@ public class ClauseSet {
 	 * @param clauses
 	 */
 	public ClauseSet(HashMap<Integer, Variable> variables, Clause... clauses) {
-		this.clauses = new Vector<>(Arrays.asList(clauses));
+		for(Clause currentClause : clauses){
+			ClauseState currentState = currentClause.initWatch(variables);
+			if(currentState == ClauseState.UNIT){
+				this.units.addElement(currentClause);
+				this.clauses.addElement(currentClause);
+			}
+			
+			else if(currentState == ClauseState.EMPTY){
+				continue;
+			}
+			else{
+				this.clauses.addElement(currentClause);
+			}
+		}
 		this.variables = variables;
 		this.varNum = variables.size();
 	}
@@ -72,46 +89,36 @@ public class ClauseSet {
 	 * Executes unit propagation and checks for the existence of an empty
 	 * clause.
 	 * 
-	 * @return true, if an empty clause exists, otherwise false.
+	 * @return null if no empty clause exists or the empty clause.
 	 */
-	public boolean unitPropagation() {
-		Clause unit;
-		while ((unit = nextUnit()) != null) {
-			Integer literal = unit.getUnassigned(variables);
-			boolean polarity = unit.getPolarity(literal);
-			variables.get(Math.abs(literal)).assign(polarity);
+	public Clause unitPropagation() {
+		if(units.size() == 0){
+			return null;
 		}
-		return containsEmpty();
-	}
-
-	/**
-	 * Returns the next unit clause, if one exists.
-	 * 
-	 * @return next unit clause, if one exists, otherwise null
-	 */
-	private Clause nextUnit() {
-		for (Clause clause : clauses) {
-			if (clause.isUnit()) {
-				return clause;
+		Vector<Clause> newUnits = new Vector<Clause>();
+		for(Clause currentClause : units){
+			int currentUnassigned = currentClause.getNumUnassigned();
+			Clause emptyClause = null;
+			if(currentClause.getPolarity(currentUnassigned)){				
+				 emptyClause = variables.get(currentUnassigned).assign(true, variables, newUnits);
+				 if(emptyClause != null){
+					 return emptyClause;
+				 }					
+			}
+			else{
+				emptyClause = variables.get(currentUnassigned).assign(false, variables, newUnits);
+				if(emptyClause != null){
+					 return emptyClause;
+				 }
 			}
 		}
-		return null;
+		
+		units.addAll(newUnits);		
+		return unitPropagation();
 	}
 
-	/**
-	 * Checks, if an empty clause exists.
-	 * 
-	 * @return true, if an empty clause exists, otherwise false.
-	 */
-	private boolean containsEmpty() {
-		for (Clause clause : clauses) {
-			if (clause.isEmpty()) {
-				return true;
-			}
-		}
-		return false;
-	}
 
+	
 	@Override
 	public String toString() {
 		return clausesToString() + "\n\n" + varsToString();

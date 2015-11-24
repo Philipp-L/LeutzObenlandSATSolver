@@ -3,6 +3,7 @@ package dataStructure;
 import java.util.HashMap;
 import java.util.Vector;
 
+import dataStructure.Clause.ClauseState;
 import dataStructure.Variable.State;
 
 /**
@@ -13,11 +14,10 @@ public class Clause {
 	/* Literals of the clause */
 	private Vector<Integer> literals;
 
-	/* Number of unassigned literals within this clause */
-	private int numUnassigned;
+	public enum ClauseState {SAT, EMPTY, UNIT, SUCCESS};
 
-	/* Current state of satisfaction */
-	private boolean sat;
+	/* 2 Beobachtete Literale*/
+	int lit1, lit2;
 
 	HashMap<Integer, Variable> variables;
 
@@ -31,8 +31,6 @@ public class Clause {
 	public Clause(Vector<Integer> literals, HashMap<Integer, Variable> variables) {
 		this.literals = literals;
 		this.variables = variables;
-		this.numUnassigned = literals.size();
-		this.sat = false;
 	}
 
 	/**
@@ -45,40 +43,19 @@ public class Clause {
 	}
 
 	/**
-	 * Returns the number of unassigned literals in this clause.
+	 * Returns an unassigned Literal, if one of the 2 watched is
+	 * unassigned.
 	 * 
-	 * @return number of unassigned literals
+	 * @return number of the unassigned literal
 	 */
 	public int getNumUnassigned() {
-		return numUnassigned;
-	}
-
-	/**
-	 * Sets the number of unassigned literals in this clause.
-	 * 
-	 * @param unassigned
-	 */
-	public void setNumUnassigned(int unassigned) {
-		this.numUnassigned = unassigned;
-	}
-
-	/**
-	 * Returns the current satisfaction state of this clause.
-	 * 
-	 * @return satisfaction state of this clause
-	 */
-	public boolean getSat() {
-		return sat;
-	}
-
-	/**
-	 * Sets the satisfaction state of this clause to the given value.
-	 * 
-	 * @param sat
-	 *            new satisfaction state
-	 */
-	public void setSat(boolean sat) {
-		this.sat = sat;
+		if(variables.get(lit1).getState() == State.OPEN){
+			return lit1;
+		}
+		else if (variables.get(lit1).getState() == State.OPEN) {
+			return lit2;
+		}
+		return 0;
 	}
 
 	/**
@@ -88,6 +65,7 @@ public class Clause {
 	 *            variable objects
 	 * @return an unassigned literal, if one exists, 0 otherwise
 	 */
+	/*
 	public int getUnassigned(HashMap<Integer, Variable> variables) {
 		for (Integer literal : literals) {
 			if (variables.get(Math.abs(literal)).getState() == State.OPEN) {
@@ -96,55 +74,7 @@ public class Clause {
 		}
 		return 0;
 	}
-
-	/**
-	 * Returns the current unit state of this clause.
-	 * 
-	 * @return true if this clause is unit, otherwise false
-	 */
-	public boolean isUnit() {
-		if (isSat()) {
-			return false;
-		}
-		return numUnassigned == 1;
-	}
-
-	/**
-	 * Returns the current satisfaction state.
-	 * 
-	 * @return true if this clause is satisfied, otherwise false
-	 */
-	public boolean isSat() {
-		return sat;
-	}
-
-	protected void checkSat() {
-		for (Integer literal : literals) {
-			Variable variable = variables.get(Math.abs(literal));
-			if (getPolarity(literal) && variable.getState() == Variable.State.TRUE) {
-				sat = true;
-				break;
-			} else if (!getPolarity(literal) && variable.getState() == Variable.State.FALSE) {
-				sat = true;
-				break;
-			}
-		}
-	}
-
-	/**
-	 * Returns the current empty state of this clause.
-	 * 
-	 * @return true if this clause is empty, otherwise false
-	 */
-	public boolean isEmpty() {
-		if (isSat()) {
-			return false;
-		}
-		if (literals.isEmpty()) {
-			return true;
-		}
-		return numUnassigned == 0;
-	}
+	*/
 
 	/**
 	 * Returns the phase of the variable within this clause.
@@ -166,11 +96,82 @@ public class Clause {
 		return literals.size();
 	}
 
+	/**
+	 * Initialisiert die zu beobachtenden Literale und gibt entsrpechenden 
+	 * Status der Clauses zurück
+	 * 
+	 * @param variables
+	 * @return
+	 */
+	public ClauseState initWatch(HashMap<Integer, Variable> variables){
+		int numberOfLiterals = literals.size();
+		if(numberOfLiterals == 0){
+			return ClauseState.EMPTY;
+		}
+		else if(numberOfLiterals == 1){
+			return ClauseState.UNIT;
+		}
+
+		else{
+			lit1 = literals.get(0);
+			lit2 = literals.get(1);
+			return ClauseState.SUCCESS;
+		}
+
+	}
+
+	public ClauseState reWatch(HashMap<Integer, Variable> variables, int id) {
+		//Swap to be replaced literal to lit1
+		if(id != lit1){
+			lit1 = lit1 ^ lit2;
+			lit2 = lit1 ^ lit2;
+			lit1 = lit1 ^ lit2;
+		}
+
+		//find new watched literal
+		for(int currentLiteral : literals){
+			if((currentLiteral == lit1) || (currentLiteral == lit2)){
+				continue;
+			}
+
+			State currentVariableState = variables.get(currentLiteral).getState();
+			boolean currentPolarity = getPolarity(id);
+
+			if((currentVariableState == State.OPEN) ||
+				(currentVariableState == State.FALSE && !currentPolarity) ||
+				(currentVariableState == State.TRUE && currentPolarity)){
+				lit1 = id;
+				return ClauseState.SUCCESS;
+			}
+			
+		}
+
+		//kein neues watched Literal gefunden
+		boolean lit2Polarity = getPolarity(lit2);
+		State lit2State = variables.get(lit2).getState();
+		if((lit2State == State.FALSE && lit2Polarity) ||
+				(lit2State == State.TRUE && !lit2Polarity)){
+			return ClauseState.EMPTY;
+		}
+		if((lit2State == State.FALSE && !lit2Polarity) ||
+				(lit2State == State.TRUE && lit2Polarity)){
+			return ClauseState.SAT;
+		}
+		
+		if(lit2State == State.OPEN){
+			return ClauseState.UNIT;
+		}
+		
+		return null;
+	}
+
 	@Override
 	public String toString() {
 		String res = "{ ";
 		for (Integer i : literals)
 			res += i + " ";
-		return res + "}" + ", sat = " + sat + ", unassigned = " + numUnassigned;
+		return res + "}" + ", sat = " + ", unassigned = " ;
 	}
+
+
 }

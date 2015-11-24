@@ -34,37 +34,44 @@ public class ClauseSetTests {
 		v2.getAdjacencyList().add(c1);
 		v2.getAdjacencyList().add(c2);
 		v2.getAdjacencyList().add(c3);
+		
+		
 	}
 
+	/**
+	 * Should be null, since there are no empty clauses and the clauses should be resolved
+	 */
 	@Test
 	public void testUnitPropergation_Success() {
 		ClauseSet set = new ClauseSet(variables, c1, c2);
-		assertFalse(set.unitPropagation());
-
+		assertNull(set.unitPropagation());
 		System.out.println(set);
 	}
 
-	@Test
+	/**
+	 * Should not be null, since there is a conflict 
+	 * 
+	 * 
+	 */	@Test
 	public void testUnitPropergation_Failure() {
 		ClauseSet set = new ClauseSet(variables, c1, c2, c3);
-		assertTrue(set.unitPropagation());
-
+		assertNotNull(set.unitPropagation());
 		System.out.println(set);
 	}
 
 	@Test
 	public void testUnitPropergation_Formula01() throws IOException {
 		ClauseSet clauseSet = new ClauseSet("formula/formula01.cnf");
-		boolean hasEmptyClause = clauseSet.unitPropagation();
+		Clause hasEmptyClause = clauseSet.unitPropagation();
 		System.out.println(clauseSet);
-		assertTrue(hasEmptyClause);
+		assertNull(hasEmptyClause);
 	}
 
 	@Test
 	public void testUnitPropergation_Formula02() throws IOException {
 		ClauseSet clauseSet = new ClauseSet("formula/formula02.cnf");
-		boolean hasEmptyClause = clauseSet.unitPropagation();
+		Clause hasEmptyClause = clauseSet.unitPropagation();
 		System.out.println(clauseSet);
-		assertFalse(hasEmptyClause);
+		assertNotNull(hasEmptyClause);
 	}
 }

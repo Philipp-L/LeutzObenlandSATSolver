@@ -14,9 +14,10 @@ public class ClauseTests {
 	Variable v1, v2, v3;
 	Clause c1, c2;
 	HashMap<Integer, Variable> variables = new HashMap<>();
-
+	Vector<Clause> units;
 	@Before
 	public void before() {
+		units = new Vector<Clause>();
 		v1 = new Variable(1);
 		v2 = new Variable(2);
 		v3 = new Variable(3);
@@ -27,7 +28,6 @@ public class ClauseTests {
 		variables.put(3, v3);
 		c1 = new Clause(new Vector<>(Arrays.asList(1, 2)), variables);
 		c2 = new Clause(new Vector<>(Arrays.asList(2, 3)), variables);
-		
 
 		v1.getAdjacencyList().add(c1);
 		v1.getAdjacencyList().add(c2);
@@ -38,50 +38,32 @@ public class ClauseTests {
 	}
 
 	@Test
-	public void testGetUnassigned() {
-		int literal = c1.getUnassigned(variables);
+	public void testGetUnassignedNoUnassigned() {
+		int literal = c1.getNumUnassigned();
 		assertEquals(1, literal);
 
-		v1.assign(true);
-		v2.assign(true);
+		v1.assign(true,variables,units);
+		v2.assign(true,variables,units);
 
-		literal = c1.getUnassigned(variables);
+		literal = c1.getNumUnassigned();
+		
 		assertEquals(0, literal);
 	}
 
 	@Test
-	public void testCheckSet() {
-		assertFalse(c1.isSat());
-		c1.checkSat();
-		assertFalse(c1.isSat());
+	public void testGetUnassignedOneUnassigned() {
+		int literal = c1.getNumUnassigned();
+		assertEquals(1, literal);
 
-		v1.assign(false);
-		c1.checkSat();
-		assertFalse(c1.isSat());
+		v1.assign(true,variables,units);
+		v2.assign(true,variables,units);
 
-		v2.assign(false);
-		c1.checkSat();
-		assertFalse(c1.isSat());
-
-		v1.assign(true);
-		c1.checkSat();
-		assertTrue(c1.isSat());
-
-		v2.assign(true);
-		c1.checkSat();
-		assertTrue(c1.isSat());
+		literal = c2.getNumUnassigned();
+		
+		assertEquals(3, literal);
 	}
-
-	@Test
-	public void testIsEmpty() {
-		assertTrue(new Clause(new Vector<Integer>(), variables).isEmpty());
-		assertFalse(c1.isEmpty());
-		v1.assign(false);
-		assertFalse(c1.isEmpty());
-		v2.assign(false);
-		assertTrue(c1.isEmpty());
-	}
-
+	
+	
 	@Test
 	public void testGetPolarity() {
 		assertTrue(c1.getPolarity(1));
@@ -90,16 +72,4 @@ public class ClauseTests {
 		assertFalse(new Clause(new Vector<>(Arrays.asList(-1)), variables).getPolarity(0));
 	}
 	
-
-	@Test
-	public void testIsUnit() {
-		assertFalse(c1.isUnit());
-		v1.assign(false);
-		assertTrue(c1.isUnit());
-		v1.assign(false);
-		assertTrue(c1.isUnit());
-		v2.assign(false);
-		assertFalse(c1.isUnit());
-	}
-
 }
