@@ -7,6 +7,8 @@ import java.util.Arrays;
 import java.util.HashMap;
 import java.util.Vector;
 
+import javax.swing.border.EmptyBorder;
+
 import org.junit.Before;
 import org.junit.Test;
 
@@ -38,30 +40,35 @@ public class ClauseSetTests {
 	@Test
 	public void testUnitPropergation_Success() {
 		ClauseSet set = new ClauseSet(variables, c1, c2);
+		System.out.println(set.unitPropagation());
+		System.out.println(set);
 		assertNull(set.unitPropagation());
 	}
-
-	/**
+	
+	/*
 	 * Should not be null, since there is a conflict
 	 * 
-	 */
+	*/ 
 	@Test
 	public void testUnitPropergation_Failure() {
 		ClauseSet set = new ClauseSet(variables, c1, c2, c3);
-		assertEquals(c2, set.unitPropagation());
+		System.out.println(set);
+		assertNotNull(set.unitPropagation());
 	}
 
 	@Test
 	public void testUnitPropergation_Formula01() throws IOException {
 		ClauseSet clauseSet = new ClauseSet("formula/formula01.cnf");
+		System.out.println(clauseSet);
 		Clause hasEmptyClause = clauseSet.unitPropagation();
-		assertNull(hasEmptyClause);
+		assertNotNull(hasEmptyClause);
 	}
 
 	@Test
 	public void testUnitPropergation_Formula02() throws IOException {
 		ClauseSet clauseSet = new ClauseSet("formula/formula02.cnf");
+		System.out.println(clauseSet);
 		Clause hasEmptyClause = clauseSet.unitPropagation();
-		assertNotNull(hasEmptyClause);
+		assertNull(hasEmptyClause);
 	}
 }

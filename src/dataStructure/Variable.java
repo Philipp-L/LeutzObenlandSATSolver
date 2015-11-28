@@ -1,7 +1,10 @@
 package dataStructure;
 
+import java.awt.peer.LightweightPeer;
 import java.util.HashMap;
 import java.util.Vector;
+
+import javax.swing.plaf.synth.SynthSpinnerUI;
 
 import dataStructure.Clause.ClauseState;
 
@@ -38,6 +41,18 @@ public class Variable {
 	}
 
 	/**
+	 * Construction - only for Test purposes
+	 * @param id id of the Viariable
+	 * @param initialState inital State of the Variable
+	 */
+	public Variable(int id, State initialState) {
+		this.id = id;
+		this.watched = new Vector<>();
+		this.state = initialState;
+	}
+
+	
+	/**
 	 * Returns the current assignment state of this variable.
 	 * 
 	 * @return current assignment state
@@ -66,11 +81,14 @@ public class Variable {
 	 * @return Leere Klausel oder null, wenn keine existiert
 	 */
 	public Clause assign(boolean val, HashMap<Integer, Variable> variables,
-			Vector<Clause> units){
+			Vector<Clause> units){		
+		System.out.println(this.id + " gets assigend "  + val);
 		this.state = val ? State.TRUE : State.FALSE;
-		
-		for (Clause currentClause : watched) {
+		Vector<Clause> watchedCopie = new Vector<>();
+		watchedCopie.addAll(watched);
+		for (Clause currentClause : watchedCopie) {
 			ClauseState variableState = currentClause.reWatch(variables, this.id);
+			
 			if(variableState == ClauseState.EMPTY){
 				return currentClause;
 			}
@@ -90,5 +108,9 @@ public class Variable {
 
 	public void isWatchedBy(Clause clause) {
 		watched.add(clause);
+	}
+	
+	public void removeWatchedBy(Clause clause){
+		watched.remove(clause);
 	}
 }

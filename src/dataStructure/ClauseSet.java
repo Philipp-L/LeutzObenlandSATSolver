@@ -1,6 +1,8 @@
 package dataStructure;
 
+import java.awt.geom.CubicCurve2D;
 import java.io.IOException;
+import java.rmi.server.UID;
 import java.util.HashMap;
 import java.util.Vector;
 
@@ -16,10 +18,10 @@ public class ClauseSet {
 	private int varNum;
 	/* Clauses of this set */
 
-	private Vector<Clause> clauses;
+	private Vector<Clause> clauses = new Vector<>();
 
 	/* Unit clauses of this list */
-	private Vector<Clause> units;
+	public Vector<Clause> units;
 
 	/* List of all variables */
 	private HashMap<Integer, Variable> variables;
@@ -38,6 +40,7 @@ public class ClauseSet {
 		this.units = new Vector<>();
 		
 		Vector<Clause> clauses = new Vector<>(dimacsParser.getNumberOfClauses());
+		
 		for (Vector<Integer> rawClause : dimacsParser.getFormula()) {
 			Clause clause = new Clause(rawClause, variables);
 			clauses.add(clause);
@@ -45,7 +48,8 @@ public class ClauseSet {
 				addVariable(literal);
 			}
 		}
-		init(clauses.toArray(new Clause[this.clauses.size()]));
+	
+		init(clauses.toArray(new Clause[clauses.size()]));
 	}
 
 	private Variable addVariable(Integer literal) {
@@ -95,20 +99,32 @@ public class ClauseSet {
 	public Clause unitPropagation() {
 		if (units.size() == 0) {
 			return null;
-		}
+		}		
+		
 		Vector<Clause> newUnits = new Vector<Clause>();
-		for (Clause currentClause : units) {
+		Vector<Clause> unitsCopie = new Vector<>();
+		unitsCopie.addAll(units);
+		
+		for (Clause currentClause : unitsCopie) {
+			if(currentClause.isSat()){
+				units.remove(currentClause);	
+				continue;
+			}
 			int currentUnassigned = currentClause.getUnassigned(variables);
 			boolean polarity = currentClause.getPolarity(currentUnassigned);
-			Clause emptyClause = variables.get(currentUnassigned).assign(polarity, variables, newUnits);
+			Clause emptyClause = variables.get(currentUnassigned).assign(polarity, variables, newUnits);	
+			units.remove(currentClause);	
 			if (emptyClause != null) {
 				return emptyClause;
 			}
 		}
 		units.addAll(newUnits);
+		if(newUnits.size() == 0){
+			return null;
+		}
 		return unitPropagation();
 	}
-
+	
 	@Override
 	public String toString() {
 		return clausesToString() + "\n\n" + varsToString();
