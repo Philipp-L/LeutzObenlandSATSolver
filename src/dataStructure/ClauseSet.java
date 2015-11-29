@@ -13,16 +13,16 @@ import parser.DimacsParser;
  */
 public class ClauseSet {
 	/* Number of variables */
-	private final int varNum;
+	public final int varNum;
 	/* Clauses of this set */
 
-	private final Vector<Clause> clauses;
+	public final Vector<Clause> clauses;
 
 	/* Unit clauses of this list */
 	public final  Vector<Clause> units;
 
 	/* List of all variables */
-	private final HashMap<Integer, Variable> variables;
+	public final HashMap<Integer, Variable> variables;
 
 	/**
 	 * Constructs a clause set from the given DIMACS file.

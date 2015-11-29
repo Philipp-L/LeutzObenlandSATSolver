@@ -1,10 +1,7 @@
 package dataStructure;
 
-import java.awt.peer.LightweightPeer;
 import java.util.HashMap;
 import java.util.Vector;
-
-import javax.swing.plaf.synth.SynthSpinnerUI;
 
 import dataStructure.Clause.ClauseState;
 
@@ -27,6 +24,15 @@ public class Variable {
 
 	/* Clauses containing this variable */
 	private Vector<Clause> watched;
+	
+	/* The activity of this variable. s*/
+	private float activity = 1.0f;
+	
+	/* Because of this clause, the variable was assigned to this value. Null, if this was a decision. */
+	private Clause reason;
+	
+	/* The level, where this variable was assigned. */
+	private int level;
 
 	/**
 	 * Creates a variable with the given ID.
@@ -97,7 +103,7 @@ public class Variable {
 
 	@Override
 	public String toString() {
-		String res = "[" + state + " ";
+		String res = "[" + state + ", activity: " + activity;
 		res += "\n\tAdjacence List: " + watched;
 		return res + "\n]";
 	}
@@ -108,5 +114,16 @@ public class Variable {
 	
 	public void removeWatchedBy(Clause clause){
 		watched.remove(clause);
+	}
+	
+	public void increaseActivity() {
+		activity *= 1.1d;
+	}
+	
+	public void decreaseActivity() {
+		activity *= 0.95d;
+	}
+	public float getActivity() {
+		return activity;
 	}
 }
