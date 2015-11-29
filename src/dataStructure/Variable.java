@@ -126,4 +126,10 @@ public class Variable {
 	public float getActivity() {
 		return activity;
 	}
+	public Clause getReason() {
+		return reason;
+	}
+	public void setReason(Clause reason) {
+		this.reason = reason;
+	}
 }
