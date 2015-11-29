@@ -84,7 +84,7 @@ public class VariableTests {
 		v1.assign(false, variables, units);
 		assertEquals(c1.reWatch(variables, 1), ClauseState.EMPTY);
 		assertEquals(c2.reWatch(variables, 1), ClauseState.SAT);
-		assertEquals(c3.reWatch(variables, 1), ClauseState.SUCCESS);
+		assertEquals(c3.reWatch(variables, 1), ClauseState.SAT);
 	}
 	
 	

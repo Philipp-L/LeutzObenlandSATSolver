@@ -81,14 +81,10 @@ public class Variable {
 	 * @return Leere Klausel oder null, wenn keine existiert
 	 */
 	public Clause assign(boolean val, HashMap<Integer, Variable> variables,
-			Vector<Clause> units){		
-		System.out.println(this.id + " gets assigend "  + val);
+			Vector<Clause> units){
 		this.state = val ? State.TRUE : State.FALSE;
-		Vector<Clause> watchedCopie = new Vector<>();
-		watchedCopie.addAll(watched);
-		for (Clause currentClause : watchedCopie) {
+		for (Clause currentClause : new Vector<>(watched)) {
 			ClauseState variableState = currentClause.reWatch(variables, this.id);
-			
 			if(variableState == ClauseState.EMPTY){
 				return currentClause;
 			}

@@ -1,8 +1,6 @@
 package dataStructure;
 
-import java.awt.geom.CubicCurve2D;
 import java.io.IOException;
-import java.rmi.server.UID;
 import java.util.HashMap;
 import java.util.Vector;
 
@@ -15,16 +13,16 @@ import parser.DimacsParser;
  */
 public class ClauseSet {
 	/* Number of variables */
-	private int varNum;
+	private final int varNum;
 	/* Clauses of this set */
 
-	private Vector<Clause> clauses = new Vector<>();
+	private final Vector<Clause> clauses;
 
 	/* Unit clauses of this list */
-	public Vector<Clause> units;
+	public final  Vector<Clause> units;
 
 	/* List of all variables */
-	private HashMap<Integer, Variable> variables;
+	private final HashMap<Integer, Variable> variables;
 
 	/**
 	 * Constructs a clause set from the given DIMACS file.
@@ -38,6 +36,7 @@ public class ClauseSet {
 		this.variables = new HashMap<>(dimacsParser.getNumberOfVariables());
 		this.varNum = dimacsParser.getNumberOfVariables();
 		this.units = new Vector<>();
+		this.clauses = new Vector<>();
 		
 		Vector<Clause> clauses = new Vector<>(dimacsParser.getNumberOfClauses());
 		
@@ -100,26 +99,20 @@ public class ClauseSet {
 		if (units.size() == 0) {
 			return null;
 		}		
-		
-		Vector<Clause> newUnits = new Vector<Clause>();
-		Vector<Clause> unitsCopie = new Vector<>();
-		unitsCopie.addAll(units);
-		
-		for (Clause currentClause : unitsCopie) {
+		for (Clause currentClause : new Vector<Clause>(units)) {
 			if(currentClause.isSat()){
 				units.remove(currentClause);	
 				continue;
 			}
 			int currentUnassigned = currentClause.getUnassigned(variables);
 			boolean polarity = currentClause.getPolarity(currentUnassigned);
-			Clause emptyClause = variables.get(currentUnassigned).assign(polarity, variables, newUnits);	
+			Clause emptyClause = variables.get(currentUnassigned).assign(polarity, variables, units);	
 			units.remove(currentClause);	
 			if (emptyClause != null) {
 				return emptyClause;
 			}
 		}
-		units.addAll(newUnits);
-		if(newUnits.size() == 0){
+		if(units.size() == 0){
 			return null;
 		}
 		return unitPropagation();
