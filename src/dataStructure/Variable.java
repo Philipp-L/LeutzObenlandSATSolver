@@ -19,6 +19,14 @@ public class Variable {
 		TRUE, FALSE, OPEN
 	};
 
+	/* aktivität der variable */
+	private float activity;
+	
+	/*Grund für belegung*/
+	private Clause reason;
+	/*level der belegung*/
+	int level;
+	
 	/* Current assignment */
 	private State state;
 
@@ -112,5 +120,17 @@ public class Variable {
 	
 	public void removeWatchedBy(Clause clause){
 		watched.remove(clause);
+	}
+	
+	public void computeAcitivity(float factor){
+		this.activity = this.activity*factor;
+	}
+	
+	/**
+	 * Watched enthält alle Klauseln in dennen diese Variable vorkommt
+	 * - entsprechend ist die initiale Aktivität gleich der Anzahl dieser Klauseln
+	 */
+	public void initAcitivty(){
+		this.activity = this.watched.size();
 	}
 }

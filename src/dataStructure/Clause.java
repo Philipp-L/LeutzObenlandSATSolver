@@ -1,7 +1,9 @@
 package dataStructure;
 
+import java.nio.file.StandardCopyOption;
 import java.util.HashMap;
 import java.util.Vector;
+import java.util.concurrent.Future;
 
 import dataStructure.Variable.State;
 
@@ -105,12 +107,14 @@ public class Clause {
 	}
 
 	public ClauseState reWatch(HashMap<Integer, Variable> variables, int litId) {
-		//Neuer watch war irelevant
-		if(litId != Math.abs(lit1 )&& litId != Math.abs(lit2)){
+		
+		if(variables.get(lit1).getState() == State.OPEN && variables.get(lit2).getState() == State.OPEN){
+			if(lit1 == lit2){
+				return ClauseState.UNIT;
+			}
 			return ClauseState.SUCCESS;
 		}
 		
-		//einfacheit - tausche ersetzes lit an lit 1
 		if (litId != Math.abs(lit1) ) {
 			lit1 = lit1 ^ lit2;
 			lit2 = lit1 ^ lit2;
@@ -119,36 +123,39 @@ public class Clause {
 
 		// die klausel is jetzt sat
 		if(variables.get(lit1).getState() == State.TRUE && getPolarity(lit1) == true || 
-			variables.get(lit2).getState() == State.FALSE && getPolarity(lit1) == false){
+			variables.get(lit1).getState() == State.FALSE && getPolarity(lit1) == false){
 			variables.get(litId).removeWatchedBy(this);
 			return ClauseState.SAT;
 		}
 
 		// find new watched literal - alle auser bereits vergebene auf Open testen
+		boolean foundOne = false;
 		for (int currentLiteral : literals) {
-			boolean currentPolarity = getPolarity(currentLiteral);
-			
+			//boolean currentPolarity = getPolarity(currentLiteral);
 			if ((currentLiteral == lit1) || (currentLiteral == lit2)) {
 				continue;
 			}
 			State currentVariableState = variables.get(currentLiteral).getState();
 			//neuer opne gefunden - alles gut!
 			if ((currentVariableState == State.OPEN)) {
+				if(foundOne){
+					return ClauseState.SUCCESS;
+				}
+				foundOne = true;
 				lit1 = currentLiteral;
 				variables.get(lit1).isWatchedBy(this);
 				variables.get(litId).removeWatchedBy(this);
+				if(variables.get(lit2).getState() == State.OPEN){
+					return ClauseState.SUCCESS;
+				}
+			}
 
-				return ClauseState.SUCCESS;
-			}
-			
-			//geteste Variable is zwar nicht open, aber dafür sat - sollte eigentlich nicht vorkommen
-			if((currentVariableState == State.TRUE && currentPolarity) ||
-				currentVariableState == State.FALSE && !currentPolarity){
-				variables.get(litId).removeWatchedBy(this);
-				return ClauseState.SAT;
-			}
+		}
+		if(foundOne){
+			return ClauseState.UNIT;
 		}
 		// kein neues watched Literal gefunden
+		//litid ist auf lit1, lit 1 wird rausgehauen
 		variables.get(litId).removeWatchedBy(this);
 		lit1 = lit2;
 		boolean lit2Polarity = getPolarity(lit2);

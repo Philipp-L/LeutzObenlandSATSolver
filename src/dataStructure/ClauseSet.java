@@ -3,7 +3,12 @@ package dataStructure;
 import java.awt.geom.CubicCurve2D;
 import java.io.IOException;
 import java.rmi.server.UID;
+import java.util.ArrayList;
+import java.util.Collection;
 import java.util.HashMap;
+import java.util.Iterator;
+import java.util.List;
+import java.util.Map.Entry;
 import java.util.Vector;
 
 import dataStructure.Clause.ClauseState;
@@ -14,6 +19,10 @@ import parser.DimacsParser;
  * 
  */
 public class ClauseSet {
+	
+	private final float INCREASE_FACTOR = (float)1.1;
+	private final float DECREASE_FACTOR = (float)0.95;
+	
 	/* Number of variables */
 	private int varNum;
 	/* Clauses of this set */
@@ -52,6 +61,10 @@ public class ClauseSet {
 		init(clauses.toArray(new Clause[clauses.size()]));
 	}
 
+	private void initAcitivy(){
+		//TODO
+	}
+	
 	private Variable addVariable(Integer literal) {
 		Variable variable = variables.get(literal);
 		if (variable == null) {
@@ -153,4 +166,23 @@ public class ClauseSet {
 			res += "Variable " + i + ": " + variables.get(i) + "\n\n";
 		return res;
 	}
+	
+	/**
+	 * Erhöht die Aktivität einer variablen
+	 */
+	public void increaseAcitivty(){
+		for(Integer entry : variables.keySet()){
+			variables.get(entry).computeAcitivity(INCREASE_FACTOR);
+		}
+	}
+	
+	/**
+	 * Senkt die Aktivität einer Variablen
+	 */
+	public void decreaseAcitivty(){
+		for(Integer entry : variables.keySet()){
+			variables.get(entry).computeAcitivity(DECREASE_FACTOR);
+		}
+	}
+	
 }

@@ -8,6 +8,8 @@ import java.util.HashMap;
 import java.util.Vector;
 import java.util.concurrent.locks.ReadWriteLock;
 
+import javax.swing.plaf.synth.SynthSpinnerUI;
+
 import org.junit.Before;
 import org.junit.Test;
 
@@ -80,6 +82,7 @@ public class ClauseTests {
 		c1 = new Clause(new Vector<>(Arrays.asList(-1,2,3)), variables);
 		c1.initWatch(variables);
 		v1.assign(true, variables, units);
+		System.out.println(c1);
 		assertTrue((c1.reWatch(variables, 1) == ClauseState.SUCCESS));
 		assertTrue(c1.lit1 == 3);
 	}
