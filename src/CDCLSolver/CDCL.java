@@ -19,14 +19,16 @@ public class CDCL {
 	public Stack<Variable> stack;
 	public int currentDecisionLevel;
 	public HashMap<Integer, Variable> variables;
+	public Vector<Clause> units;
 	
 	public static void main(String[] args) throws IOException {
-		CDCL instance = new CDCL(new ClauseSet("formula/formula01.cnf"), new Stack<Variable>());
+		CDCL instance = new CDCL(new ClauseSet("formula/formula02.cnf"), new Stack<Variable>());
 		instance.solve();
 	}
 
 	public CDCL(ClauseSet instance, Stack<Variable> stack){
 		instance.initAcitivy();
+		this.units = instance.units;
 		this.clauses =instance;
 		this.stack = stack;
 		this.currentDecisionLevel = 0;
@@ -146,9 +148,10 @@ public class CDCL {
 	
 	public boolean solve(){
 		while(!clauses.allClausesAreSAT()){
-			System.out.println(getHighestAcitivityVariable().getId());
-			System.exit(0);
+			Variable nextVariable = getHighestAcitivityVariable();
+			nextVariable.assign(true, variables, units);
 		}
+		System.out.println("great Success");
 		return false;
 	}
 }
