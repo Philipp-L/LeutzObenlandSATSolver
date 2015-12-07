@@ -107,12 +107,16 @@ public class Clause {
 	}
 
 	public ClauseState reWatch(HashMap<Integer, Variable> variables, int litId) {
-		
 		if(variables.get(lit1).getState() == State.OPEN && variables.get(lit2).getState() == State.OPEN){
 			if(lit1 == lit2){
 				return ClauseState.UNIT;
 			}
-			return ClauseState.SUCCESS;
+			else{
+				return ClauseState.SUCCESS;
+			}
+		}
+		if(isCorrectlyAssigned(lit1) || isCorrectlyAssigned(lit2)){
+			return ClauseState.SAT;
 		}
 		
 		if (litId != Math.abs(lit1) ) {
@@ -121,76 +125,96 @@ public class Clause {
 			lit1 = lit1 ^ lit2;
 		}
 
-		// die klausel is jetzt sat
-		if(variables.get(lit1).getState() == State.TRUE && getPolarity(lit1) == true || 
-			variables.get(lit1).getState() == State.FALSE && getPolarity(lit1) == false){
-			variables.get(litId).removeWatchedBy(this);
-			return ClauseState.SAT;
+		ClauseState lit1State = findNewOne(lit1);
+		ClauseState lit2State = findNewOne(lit2);
+		if(lit1State == ClauseState.SAT || lit2State == ClauseState.SAT){
+			return lit1State;
 		}
-
-		// find new watched literal - alle auser bereits vergebene auf Open testen
-		boolean foundOne = false;
-		for (int currentLiteral : literals) {
-			//boolean currentPolarity = getPolarity(currentLiteral);
-			if ((currentLiteral == lit1) || (currentLiteral == lit2)) {
-				continue;
-			}
-			State currentVariableState = variables.get(currentLiteral).getState();
-			//neuer opne gefunden - alles gut!
-			if ((currentVariableState == State.OPEN)) {
-				if(foundOne){
-					return ClauseState.SUCCESS;
-				}
-				foundOne = true;
-				lit1 = currentLiteral;
-				variables.get(lit1).isWatchedBy(this);
-				variables.get(litId).removeWatchedBy(this);
-				if(variables.get(lit2).getState() == State.OPEN){
-					return ClauseState.SUCCESS;
-				}
-			}
-
-		}
-		if(foundOne){
+		
+		if(lit1State == ClauseState.SUCCESS && lit2State == ClauseState.EMPTY ||
+			lit2State == ClauseState.SUCCESS && lit1State == ClauseState.EMPTY){
 			return ClauseState.UNIT;
 		}
-		// kein neues watched Literal gefunden
-		//litid ist auf lit1, lit 1 wird rausgehauen
-		variables.get(litId).removeWatchedBy(this);
-		lit1 = lit2;
-		boolean lit2Polarity = getPolarity(lit2);
-		State lit2State = variables.get(lit2).getState();
-		if ((lit2State == State.FALSE && lit2Polarity) || (lit2State == State.TRUE && !lit2Polarity)) {
-			variables.get(litId).removeWatchedBy(this);
-			return ClauseState.EMPTY;
-		} else if ((lit2State == State.FALSE && !lit2Polarity) || (lit2State == State.TRUE && lit2Polarity)) {
-			variables.get(litId).removeWatchedBy(this);
-			return ClauseState.SAT;
-		} else if (lit2State == State.OPEN) {
-			return ClauseState.UNIT;
+		
+		if(lit1State == ClauseState.SUCCESS && lit2State == ClauseState.SUCCESS){
+			return ClauseState.SUCCESS;
 		}
-		return null;
+		
+		return ClauseState.EMPTY;
+
 	}
 
-	public boolean isSat(){
-		State state1 = variables.get(lit1).getState();
-		State state2 = variables.get(lit2).getState();
-		boolean polarity1 = getPolarity(lit1);
-		boolean polarity2 = getPolarity(lit2);
+
+	/**Reassign one of the watched Litearls and return the found State
+	 * 
+	 * @param lit1 true -> reassign lit1, else lit2
+	 * @return ClauseState found for the literal
+	 */
+	private ClauseState findNewOne(int literal){
+		if(isCorrectlyAssigned(literal)){
+			return ClauseState.SAT;
+		}
+		else if(variables.get(literal).getState() == State.OPEN){
+			return ClauseState.SUCCESS;
+		}
 		
-		if((state1 == State.TRUE && polarity1 || state1 == State.FALSE && !polarity1) || 
-		   (state2 == State.TRUE && polarity2 || state2 == State.FALSE && !polarity2)){
+		for(int currentLiteral : literals){
+			if(currentLiteral == lit1 || currentLiteral == lit2){
+				continue;
+			}
+			
+			State currentLiteralState = variables.get(currentLiteral).getState();
+			if(currentLiteralState == State.OPEN){
+				removeAndReplaceWatchedLiteral(literal, currentLiteral);
+				return ClauseState.SUCCESS;
+			}
+			
+			if(isCorrectlyAssigned(currentLiteral)){
+				removeAndReplaceWatchedLiteral(literal, currentLiteral);
+				return ClauseState.SAT;
+			}
+		}
+		return ClauseState.EMPTY; 
+	}
+	
+	private void removeAndReplaceWatchedLiteral(int literal1, int literal2){
+		variables.get(literal1).removeWatchedBy(this);
+		variables.get(literal2).isWatchedBy(this);
+		if(literal1 == lit1){
+			lit1 = literal2;
+		}
+		else{
+			lit2 = literal2;
+		}
+	}
+
+	/**Checks if a literal is correctly assigned according to this clause
+	 * NOT the literal ID, but the ACTUAL Literal
+	 * @param literal
+	 * @return
+	 */
+	public boolean isCorrectlyAssigned(int literal){
+		State state = variables.get(literal).getState();
+		if(state == State.OPEN){
+			return false;
+		}
+		if((state == State.TRUE && getPolarity(literal)) ||
+			state == State.FALSE && !getPolarity(literal)){
 			return true;
 		}
 		return false;
 	}
 	
-	@Override
-	public String toString() {
-		String res = "{ ";
-		for (Integer i : literals)
-			res += i + " ";
-		return res + "}" + ", sat = "+", unassigned = " + lit1 + "  " + lit2;
-	}
+public boolean isSat(){
+	return (isCorrectlyAssigned(lit1) || isCorrectlyAssigned(lit2));
+}
+
+@Override
+public String toString() {
+	String res = "{ ";
+	for (Integer i : literals)
+		res += i + " ";
+	return res + "}" + ", sat = "+", unassigned = " + lit1 + "  " + lit2;
+}
 
 }

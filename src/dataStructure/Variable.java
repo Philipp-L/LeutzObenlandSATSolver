@@ -23,7 +23,7 @@ public class Variable {
 	private float activity;
 	
 	/*Grund für belegung*/
-	private Clause reason;
+	public Clause reason;
 	/*level der belegung*/
 	int level;
 	
@@ -90,7 +90,6 @@ public class Variable {
 	 */
 	public Clause assign(boolean val, HashMap<Integer, Variable> variables,
 			Vector<Clause> units){		
-		System.out.println(this.id + " gets assigend "  + val);
 		this.state = val ? State.TRUE : State.FALSE;
 		Vector<Clause> watchedCopie = new Vector<>();
 		watchedCopie.addAll(watched);
@@ -132,5 +131,28 @@ public class Variable {
 	 */
 	public void initAcitivty(){
 		this.activity = this.watched.size();
+	}
+	
+	public int getLevel(){
+		return level;
+	}
+	
+	/**
+	 * Used for testing
+	 */
+	public void setReason(Clause reason){
+		this.reason = reason;
+	}
+	
+	public void setLevel(int level){
+		this.level = level;
+	}
+
+	public void unAssign() {
+		this.state = State.OPEN;
+	}
+	
+	public float getAcivity(){
+		return activity;
 	}
 }

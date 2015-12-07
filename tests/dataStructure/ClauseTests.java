@@ -136,4 +136,25 @@ public class ClauseTests {
 		assertTrue(c1.reWatch(variables, 1) == ClauseState.EMPTY);
 	}
 	
+	@Test
+	public void TestisCorrectlyAssigned(){
+		v1 = new Variable(1);
+		v2 = new Variable(2);
+		v3 = new Variable(3);
+		variables.put(1, v1);
+		variables.put(-1, v1);
+		variables.put(2, v2);
+		variables.put(-2, v2);
+		variables.put(3, v3);
+		variables.put(-3, v3);		
+		
+		c1.initWatch(variables);
+		v1.assign(true, variables, units);
+		v2.assign(true, variables, units);
+		
+		c1 = new Clause(new Vector<>(Arrays.asList(1,-2,3)), variables);
+		assertTrue(c1.isCorrectlyAssigned(1));
+		assertFalse(c1.isCorrectlyAssigned(-2));
+		assertFalse(c1.isCorrectlyAssigned(3));
+	}
 }

@@ -8,6 +8,7 @@ import java.util.Collection;
 import java.util.HashMap;
 import java.util.Iterator;
 import java.util.List;
+import java.util.Map;
 import java.util.Map.Entry;
 import java.util.Vector;
 
@@ -19,10 +20,10 @@ import parser.DimacsParser;
  * 
  */
 public class ClauseSet {
-	
+
 	private final float INCREASE_FACTOR = (float)1.1;
 	private final float DECREASE_FACTOR = (float)0.95;
-	
+
 	/* Number of variables */
 	private int varNum;
 	/* Clauses of this set */
@@ -47,9 +48,9 @@ public class ClauseSet {
 		this.variables = new HashMap<>(dimacsParser.getNumberOfVariables());
 		this.varNum = dimacsParser.getNumberOfVariables();
 		this.units = new Vector<>();
-		
+
 		Vector<Clause> clauses = new Vector<>(dimacsParser.getNumberOfClauses());
-		
+
 		for (Vector<Integer> rawClause : dimacsParser.getFormula()) {
 			Clause clause = new Clause(rawClause, variables);
 			clauses.add(clause);
@@ -57,14 +58,16 @@ public class ClauseSet {
 				addVariable(literal);
 			}
 		}
-	
+
 		init(clauses.toArray(new Clause[clauses.size()]));
 	}
 
-	private void initAcitivy(){
-		//TODO
+	public void initAcitivy(){
+		for(Integer entry : variables.keySet()){
+			variables.get(entry).initAcitivty();
+		}
 	}
-	
+
 	private Variable addVariable(Integer literal) {
 		Variable variable = variables.get(literal);
 		if (variable == null) {
@@ -88,7 +91,7 @@ public class ClauseSet {
 		this.varNum = variables.size();
 		init(clauses);
 	}
-	
+
 	private void init(Clause[] clauses) {
 		for (Clause currentClause : clauses) {
 			ClauseState currentState = currentClause.initWatch(variables);
@@ -104,6 +107,22 @@ public class ClauseSet {
 	}
 
 	/**
+	 * Initialisiert eine neue Klausel
+	 * @param newClause
+	 */
+	public void initNewClause(Clause currentClause){
+		ClauseState currentState = currentClause.initWatch(variables);
+		if (currentState == ClauseState.UNIT) {
+			this.units.addElement(currentClause);
+			this.clauses.addElement(currentClause);
+		} else if (currentState == ClauseState.EMPTY) {
+			return;
+		} else {
+			this.clauses.addElement(currentClause);
+		}
+	}
+
+	/**
 	 * Executes unit propagation and checks for the existence of an empty
 	 * clause.
 	 * 
@@ -113,11 +132,11 @@ public class ClauseSet {
 		if (units.size() == 0) {
 			return null;
 		}		
-		
+
 		Vector<Clause> newUnits = new Vector<Clause>();
 		Vector<Clause> unitsCopie = new Vector<>();
 		unitsCopie.addAll(units);
-		
+
 		for (Clause currentClause : unitsCopie) {
 			if(currentClause.isSat()){
 				units.remove(currentClause);	
@@ -137,7 +156,7 @@ public class ClauseSet {
 		}
 		return unitPropagation();
 	}
-	
+
 	@Override
 	public String toString() {
 		return clausesToString() + "\n\n" + varsToString();
@@ -166,7 +185,7 @@ public class ClauseSet {
 			res += "Variable " + i + ": " + variables.get(i) + "\n\n";
 		return res;
 	}
-	
+
 	/**
 	 * Erhöht die Aktivität einer variablen
 	 */
@@ -175,7 +194,7 @@ public class ClauseSet {
 			variables.get(entry).computeAcitivity(INCREASE_FACTOR);
 		}
 	}
-	
+
 	/**
 	 * Senkt die Aktivität einer Variablen
 	 */
@@ -184,5 +203,20 @@ public class ClauseSet {
 			variables.get(entry).computeAcitivity(DECREASE_FACTOR);
 		}
 	}
+
+	//TODO Happens twice?
+	public HashMap<Integer, Variable> getVariables(){
+		return variables;
+	}
 	
+	public boolean allClausesAreSAT(){
+		for(Clause currentClause : clauses){
+			if(!currentClause.isSat()){
+				return false;
+			}
+		}
+		return true;
+	}
+	
+
 }
