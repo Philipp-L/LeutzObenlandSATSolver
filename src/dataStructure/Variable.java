@@ -86,10 +86,11 @@ public class Variable {
 	 * @param units Liste der Unit clauses
 	 * @return Leere Klausel oder null, wenn keine existiert
 	 */
-	public Clause assign(boolean val, HashMap<Integer, Variable> variables,
+	public Clause assign(boolean val, Clause reason, HashMap<Integer, Variable> variables,
 			Vector<Clause> units, Stack<Variable> stack, int currentDecisionLevel){		
 		this.state = val ? State.TRUE : State.FALSE;
 		this.level = currentDecisionLevel;
+		this.reason = reason;
 		stack.push(this);
 		
 		Vector<Clause> watchedCopie = new Vector<>();

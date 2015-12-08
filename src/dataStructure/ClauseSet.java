@@ -139,9 +139,7 @@ public class ClauseSet {
 				return currentClause;
 			}
 			boolean polarity = currentClause.getPolarity(currentUnassigned);
-			Clause emptyClause = variables
-					.get(currentUnassigned)
-					.assign(polarity, variables, newUnits, stack, currentDecisionLevel);	
+			Clause emptyClause = variables.get(currentUnassigned).assign(polarity, currentClause, variables, newUnits, stack, currentDecisionLevel);	
 			units.remove(currentClause);	
 			if (emptyClause != null) {
 				return emptyClause;
