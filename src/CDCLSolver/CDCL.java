@@ -101,11 +101,20 @@ public class CDCL {
 	 * @return Neu gelernte Klausel
 	 */
 	public Clause get1UIP(Clause conflict, Clause reason) {
+		String tmp = conflict + "    " + reason;
+		System.out.println(tmp);
+		System.out.println(new String(new char[tmp.length()]).replace('\0', '-'));
+
 		if (reason == null) {
+			System.err.println("No reason!");
 			return null;
 		}
 
 		Clause newClause = resolve(conflict, reason);
+
+		System.out.print(new String(new char[(tmp.length() - newClause.toString().length()) / 2]).replace('\0', ' '));
+		System.out.println(newClause);
+		System.out.println();
 		int levelCounter = 0;
 
 		for (Integer i : newClause.getLiterals()) {
@@ -113,6 +122,7 @@ public class CDCL {
 				levelCounter++;
 			}
 		}
+		System.out.println("Level counter: " + levelCounter);
 		if (levelCounter <= 1) {
 			return newClause;
 		}
@@ -133,15 +143,42 @@ public class CDCL {
 	 */
 	public int analyseConflict(Clause conflict) {
 		Clause reason = getNextVar().reason;
-		Clause newClause = get1UIP(conflict, reason);
-		this.clauses.initNewClause(newClause);
+		Clause newClause = conflict;
+		newClause = get1UIP(newClause, reason);
 
-		return stack.peek().getLevel();
+		/**
+		 * TODO: Idee:
+		 * Wir haben eine neue Klausel zum lernen. Diese ist bis jetzt EMPTY,
+		 * da alle Variablen belegt sind. Nun poppen wir so lange Variablen
+		 * vom Stack und unassign sie, bis eine der Variablen in der neuen 
+		 * Clausel enthalten ist. Dadurch bekommen wir eine Unit-Klausel.
+		 * Dann poppen wir noch alle Variablen aus dem aktuellen Level,
+		 * lernen die Klausel.
+		 */
+
+		Variable nextVar;
+		while ((nextVar = getNextVar()) != null) {
+			if (newClause.getLiterals().contains(nextVar.getId())
+					|| newClause.getLiterals().contains(-nextVar.getId())) {
+				System.out.println("Found first: " + nextVar.getId() + " with reason: " + nextVar.reason);
+				while ((nextVar = getNextVar()) != null) {
+					if (nextVar.reason == null) {
+						clauses.initNewClause(newClause);
+						System.out.println("Learned clausel: " + newClause);
+						System.out.println("New level: " + stack.peek().getLevel() + " <=> " + currentDecisionLevel);
+						return stack.peek().getLevel();
+					}
+				}
+				return -1;
+			}
+		}
+		return -1;
 	}
 
 	private Variable getNextVar() {
 		Variable currentVariable = stack.pop();
 		currentVariable.unAssign();
+		// TODO: decrease activity?
 		return currentVariable;
 	}
 
@@ -166,7 +203,6 @@ public class CDCL {
 			System.out.println();
 			Clause emptyClause = this.clauses.unitPropagation(stack, currentDecisionLevel);
 			System.out.println("Unit propagation -> empty clause: " + emptyClause);
-			System.out.println("Else SAT: " + clauses.allClausesAreSAT());
 			System.out.println("Stack: " + stackToString());
 			if (emptyClause != null) {
 				this.currentDecisionLevel = analyseConflict(emptyClause);
@@ -178,7 +214,7 @@ public class CDCL {
 			} else {
 				this.currentDecisionLevel++;
 				Variable nextVariable = getHighestAcitivityVariable();
-				System.out.println("Assign next variable to false: " + nextVariable);
+				System.out.println("Decision: Assign next variable to false: " + nextVariable.getId());
 				emptyClause = nextVariable.assign(false, null, variables, units, stack, currentDecisionLevel);
 				System.out.println("Empty clause from assignment: " + emptyClause);
 			}
@@ -188,7 +224,7 @@ public class CDCL {
 	private String stackToString() {
 		String s = "";
 		for (Variable v : stack) {
-			s += (v.getId() + (v.reason == null ? "(d" + v.getLevel() + ")" : "(p" + v.getLevel() + ")") + ", ");
+			s += (v.getId() + "("+v.getState()+")" + (v.reason == null ? "[d" + v.getLevel() + "]" : "[p" + v.getLevel() + "]") + ", ");
 		}
 		return s;
 	}
