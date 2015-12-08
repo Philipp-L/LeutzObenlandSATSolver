@@ -1,10 +1,7 @@
 package dataStructure;
 
-import java.nio.file.StandardCopyOption;
 import java.util.HashMap;
 import java.util.Vector;
-import java.util.concurrent.Future;
-
 import dataStructure.Variable.State;
 
 /**
@@ -102,24 +99,23 @@ public class Clause {
 			lit2 = literals.get(1);
 			variables.get(lit1).isWatchedBy(this);
 			variables.get(lit2).isWatchedBy(this);
-			return ClauseState.SUCCESS;
+			return reWatch(variables, 0);
 		}
 	}
 
 	public ClauseState reWatch(HashMap<Integer, Variable> variables, int litId) {
-		if(variables.get(lit1).getState() == State.OPEN && variables.get(lit2).getState() == State.OPEN){
-			if(lit1 == lit2){
+		if (variables.get(lit1).getState() == State.OPEN && variables.get(lit2).getState() == State.OPEN) {
+			if (lit1 == lit2) {
 				return ClauseState.UNIT;
-			}
-			else{
+			} else {
 				return ClauseState.SUCCESS;
 			}
 		}
-		if(isCorrectlyAssigned(lit1) || isCorrectlyAssigned(lit2)){
+		if (evaulatesToTrue(lit1) || evaulatesToTrue(lit2)) {
 			return ClauseState.SAT;
 		}
-		
-		if (litId != Math.abs(lit1) ) {
+
+		if (litId != Math.abs(lit1)) {
 			lit1 = lit1 ^ lit2;
 			lit2 = lit1 ^ lit2;
 			lit1 = lit1 ^ lit2;
@@ -127,94 +123,92 @@ public class Clause {
 
 		ClauseState lit1State = findNewOne(lit1);
 		ClauseState lit2State = findNewOne(lit2);
-		if(lit1State == ClauseState.SAT || lit2State == ClauseState.SAT){
-			return lit1State;
+		if (lit1State == ClauseState.SAT || lit2State == ClauseState.SAT) {
+			return ClauseState.SAT;
 		}
-		
-		if(lit1State == ClauseState.SUCCESS && lit2State == ClauseState.EMPTY ||
-			lit2State == ClauseState.SUCCESS && lit1State == ClauseState.EMPTY){
+		if (lit1State == ClauseState.SUCCESS && lit2State == ClauseState.EMPTY
+				|| lit2State == ClauseState.SUCCESS && lit1State == ClauseState.EMPTY) {
 			return ClauseState.UNIT;
 		}
-		
-		if(lit1State == ClauseState.SUCCESS && lit2State == ClauseState.SUCCESS){
+		if (lit1State == ClauseState.SUCCESS && lit2State == ClauseState.SUCCESS) {
 			return ClauseState.SUCCESS;
 		}
-		
+
 		return ClauseState.EMPTY;
 
 	}
 
-
-	/**Reassign one of the watched Litearls and return the found State
+	/**
+	 * Reassign one of the watched Litearls and return the found State
 	 * 
-	 * @param lit1 true -> reassign lit1, else lit2
+	 * @param lit1
+	 *            true -> reassign lit1, else lit2
 	 * @return ClauseState found for the literal
 	 */
-	private ClauseState findNewOne(int literal){
-		if(isCorrectlyAssigned(literal)){
+	private ClauseState findNewOne(int literal) {
+		if (evaulatesToTrue(literal)) {
 			return ClauseState.SAT;
-		}
-		else if(variables.get(literal).getState() == State.OPEN){
+		} else if (variables.get(literal).getState() == State.OPEN) {
 			return ClauseState.SUCCESS;
 		}
-		
-		for(int currentLiteral : literals){
-			if(currentLiteral == lit1 || currentLiteral == lit2){
+
+		for (int currentLiteral : literals) {
+			if (currentLiteral == lit1 || currentLiteral == lit2) {
 				continue;
 			}
-			
+
 			State currentLiteralState = variables.get(currentLiteral).getState();
-			if(currentLiteralState == State.OPEN){
+			if (currentLiteralState == State.OPEN) {
 				removeAndReplaceWatchedLiteral(literal, currentLiteral);
 				return ClauseState.SUCCESS;
 			}
-			
-			if(isCorrectlyAssigned(currentLiteral)){
+
+			if (evaulatesToTrue(currentLiteral)) {
 				removeAndReplaceWatchedLiteral(literal, currentLiteral);
 				return ClauseState.SAT;
 			}
 		}
-		return ClauseState.EMPTY; 
+		return ClauseState.EMPTY;
 	}
-	
-	private void removeAndReplaceWatchedLiteral(int literal1, int literal2){
+
+	private void removeAndReplaceWatchedLiteral(int literal1, int literal2) {
 		variables.get(literal1).removeWatchedBy(this);
 		variables.get(literal2).isWatchedBy(this);
-		if(literal1 == lit1){
+		if (literal1 == lit1) {
 			lit1 = literal2;
-		}
-		else{
+		} else {
 			lit2 = literal2;
 		}
 	}
 
-	/**Checks if a literal is correctly assigned according to this clause
-	 * NOT the literal ID, but the ACTUAL Literal
+	/**
+	 * Checks if a literal is correctly assigned according to this clause NOT
+	 * the literal ID, but the ACTUAL Literal
+	 * 
 	 * @param literal
 	 * @return
 	 */
-	public boolean isCorrectlyAssigned(int literal){
+	public boolean evaulatesToTrue(int literal) {
 		State state = variables.get(literal).getState();
-		if(state == State.OPEN){
+		if (state == State.OPEN) {
 			return false;
 		}
-		if((state == State.TRUE && getPolarity(literal)) ||
-			state == State.FALSE && !getPolarity(literal)){
+		if ((state == State.TRUE && getPolarity(literal)) || state == State.FALSE && !getPolarity(literal)) {
 			return true;
 		}
 		return false;
 	}
-	
-public boolean isSat(){
-	return (isCorrectlyAssigned(lit1) || isCorrectlyAssigned(lit2));
-}
 
-@Override
-public String toString() {
-	String res = "{ ";
-	for (Integer i : literals)
-		res += i + " ";
-	return res + "}" + ", sat = "+", unassigned = " + lit1 + "  " + lit2;
-}
+	public boolean isSat() {
+		return (evaulatesToTrue(lit1) || evaulatesToTrue(lit2));
+	}
+
+	@Override
+	public String toString() {
+		String res = "{ ";
+		for (Integer i : literals)
+			res += i + "("+variables.get(i).getState() +") ";
+		return res + "}";
+	}
 
 }

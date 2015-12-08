@@ -4,6 +4,7 @@ import static org.junit.Assert.assertEquals;
 
 import java.util.Arrays;
 import java.util.HashMap;
+import java.util.Stack;
 import java.util.Vector;
 
 import org.junit.Before;
@@ -51,15 +52,15 @@ public class VariableTests {
 	public void testState() {
 		Variable variable = new Variable(1);
 		assertEquals(Variable.State.OPEN, variable.getState());
-		variable.assign(true, variables, units);
+		variable.assign(true, variables, units, new Stack<Variable>(), 0);
 		assertEquals(Variable.State.TRUE, variable.getState());
-		variable.assign(true, variables, units);
+		variable.assign(true, variables, units, new Stack<Variable>(), 0);
 		assertEquals(Variable.State.TRUE, variable.getState());
-		variable.assign(false, variables, units);
+		variable.assign(false, variables, units, new Stack<Variable>(), 0);
 		assertEquals(Variable.State.FALSE, variable.getState());
-		variable.assign(false, variables, units);
+		variable.assign(false, variables, units, new Stack<Variable>(), 0);
 		assertEquals(Variable.State.FALSE, variable.getState());
-		variable.assign(true, variables, units);
+		variable.assign(true, variables, units, new Stack<Variable>(), 0);
 		assertEquals(Variable.State.TRUE, variable.getState());
 	}
 
@@ -69,7 +70,7 @@ public class VariableTests {
 		assertEquals(c2.initWatch(variables), ClauseState.SUCCESS);
 		assertEquals(c3.initWatch(variables), ClauseState.SUCCESS);
 		units.add(c1);
-		v1.assign(true, variables, units);
+		v1.assign(true, variables, units, new Stack<Variable>(), 0);
 		assertEquals(c1.reWatch(variables, 1), ClauseState.SAT);
 		assertEquals(c2.reWatch(variables, 1), ClauseState.UNIT);
 		assertEquals(c3.reWatch(variables, 1), ClauseState.SUCCESS);
@@ -81,7 +82,7 @@ public class VariableTests {
 		assertEquals(c2.initWatch(variables), ClauseState.SUCCESS);
 		assertEquals(c3.initWatch(variables), ClauseState.SUCCESS);
 		units.add(c1);
-		v1.assign(false, variables, units);
+		v1.assign(false, variables, units, new Stack<Variable>(), 0);
 		assertEquals(c1.reWatch(variables, 1), ClauseState.EMPTY);
 		assertEquals(c2.reWatch(variables, 1), ClauseState.SAT);
 		assertEquals(c3.reWatch(variables, 1), ClauseState.SAT);

@@ -1,14 +1,13 @@
 package dataStructure;
 
+import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertTrue;
 
 import java.util.Arrays;
 import java.util.HashMap;
+import java.util.Stack;
 import java.util.Vector;
-import java.util.concurrent.locks.ReadWriteLock;
-
-import javax.swing.plaf.synth.SynthSpinnerUI;
 
 import org.junit.Before;
 import org.junit.Test;
@@ -56,11 +55,8 @@ public class ClauseTests {
 	
 	@Test 
 	public void testInitWatchSucess(){
-		v1 = new Variable(1, State.TRUE);
-		variables.put(1, v1);
-		variables.put(-1, v1);
 		c1 = new Clause(new Vector<>(Arrays.asList(1,2)), variables);
-		assertTrue(c1.initWatch(variables) == ClauseState.SUCCESS);
+		assertEquals(ClauseState.SUCCESS, c1.initWatch(variables));
 	}
 	
 	@Test 
@@ -81,10 +77,9 @@ public class ClauseTests {
 		variables.put(-3, v3);
 		c1 = new Clause(new Vector<>(Arrays.asList(-1,2,3)), variables);
 		c1.initWatch(variables);
-		v1.assign(true, variables, units);
-		System.out.println(c1);
-		assertTrue((c1.reWatch(variables, 1) == ClauseState.SUCCESS));
-		assertTrue(c1.lit1 == 3);
+		v1.assign(true, variables, units, new Stack<Variable>(), 0);
+		assertEquals(ClauseState.SUCCESS, c1.reWatch(variables, 1));
+		assertEquals(2, c1.lit1);
 	}
 	
 	@Test 
@@ -99,7 +94,7 @@ public class ClauseTests {
 				
 		c1 = new Clause(new Vector<>(Arrays.asList(-1,-2)), variables);
 		c1.initWatch(variables);
-		v1.assign(true, variables, units);
+		v1.assign(true, variables, units, new Stack<Variable>(), 0);
 		assertTrue(c1.reWatch(variables, 1) == ClauseState.UNIT);
 	}
 	
@@ -115,7 +110,7 @@ public class ClauseTests {
 		
 		c1 = new Clause(new Vector<>(Arrays.asList(1)), variables);
 		c1.initWatch(variables);
-		v1.assign(true, variables, units);
+		v1.assign(true, variables, units, new Stack<Variable>(), 0);
 		assertTrue(c1.reWatch(variables, 1) == ClauseState.SAT);
 	}
 
@@ -132,7 +127,7 @@ public class ClauseTests {
 		
 		c1 = new Clause(new Vector<>(Arrays.asList(1)), variables);
 		c1.initWatch(variables);
-		v1.assign(false, variables, units);
+		v1.assign(false, variables, units, new Stack<Variable>(), 0);
 		assertTrue(c1.reWatch(variables, 1) == ClauseState.EMPTY);
 	}
 	
@@ -149,12 +144,12 @@ public class ClauseTests {
 		variables.put(-3, v3);		
 		
 		c1.initWatch(variables);
-		v1.assign(true, variables, units);
-		v2.assign(true, variables, units);
+		v1.assign(true, variables, units, new Stack<Variable>(), 0);
+		v2.assign(true, variables, units, new Stack<Variable>(), 0);
 		
 		c1 = new Clause(new Vector<>(Arrays.asList(1,-2,3)), variables);
-		assertTrue(c1.isCorrectlyAssigned(1));
-		assertFalse(c1.isCorrectlyAssigned(-2));
-		assertFalse(c1.isCorrectlyAssigned(3));
+		assertTrue(c1.evaulatesToTrue(1));
+		assertFalse(c1.evaulatesToTrue(-2));
+		assertFalse(c1.evaulatesToTrue(3));
 	}
 }

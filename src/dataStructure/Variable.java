@@ -1,10 +1,8 @@
 package dataStructure;
 
-import java.awt.peer.LightweightPeer;
 import java.util.HashMap;
+import java.util.Stack;
 import java.util.Vector;
-
-import javax.swing.plaf.synth.SynthSpinnerUI;
 
 import dataStructure.Clause.ClauseState;
 
@@ -89,10 +87,14 @@ public class Variable {
 	 * @return Leere Klausel oder null, wenn keine existiert
 	 */
 	public Clause assign(boolean val, HashMap<Integer, Variable> variables,
-			Vector<Clause> units){		
+			Vector<Clause> units, Stack<Variable> stack, int currentDecisionLevel){		
 		this.state = val ? State.TRUE : State.FALSE;
+		this.level = currentDecisionLevel;
+		stack.push(this);
+		
 		Vector<Clause> watchedCopie = new Vector<>();
 		watchedCopie.addAll(watched);
+		
 		for (Clause currentClause : watchedCopie) {
 			ClauseState variableState = currentClause.reWatch(variables, this.id);
 			
@@ -108,9 +110,9 @@ public class Variable {
 
 	@Override
 	public String toString() {
-		String res = "[" + state + " ";
-		res += "\n\tAdjacence List: " + watched;
-		return res + "\n]";
+		String res = getId() + "[" + state + " ";
+		res += "Adjacence List: " + watched;
+		return res + "]";
 	}
 
 	public void isWatchedBy(Clause clause) {

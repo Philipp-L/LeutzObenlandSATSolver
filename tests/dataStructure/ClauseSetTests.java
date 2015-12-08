@@ -1,13 +1,13 @@
 package dataStructure;
 
-import static org.junit.Assert.*;
+import static org.junit.Assert.assertNotNull;
+import static org.junit.Assert.assertNull;
 
 import java.io.IOException;
 import java.util.Arrays;
 import java.util.HashMap;
+import java.util.Stack;
 import java.util.Vector;
-
-import javax.swing.border.EmptyBorder;
 
 import org.junit.Before;
 import org.junit.Test;
@@ -40,9 +40,9 @@ public class ClauseSetTests {
 	@Test
 	public void testUnitPropergation_Success() {
 		ClauseSet set = new ClauseSet(variables, c1, c2);
-		System.out.println(set.unitPropagation());
+		System.out.println(set.unitPropagation(new Stack<Variable>(), 0));
 		System.out.println(set);
-		assertNull(set.unitPropagation());
+		assertNull(set.unitPropagation(new Stack<Variable>(), 0));
 	}
 	
 	/*
@@ -53,14 +53,14 @@ public class ClauseSetTests {
 	public void testUnitPropergation_Failure() {
 		ClauseSet set = new ClauseSet(variables, c1, c2, c3);
 		System.out.println(set);
-		assertNotNull(set.unitPropagation());
+		assertNotNull(set.unitPropagation(new Stack<Variable>(), 0));
 	}
 
 	@Test
 	public void testUnitPropergation_Formula01() throws IOException {
 		ClauseSet clauseSet = new ClauseSet("formula/formula01.cnf");
 		System.out.println(clauseSet);
-		Clause hasEmptyClause = clauseSet.unitPropagation();
+		Clause hasEmptyClause = clauseSet.unitPropagation(new Stack<Variable>(), 0);
 		assertNotNull(hasEmptyClause);
 	}
 
@@ -68,7 +68,7 @@ public class ClauseSetTests {
 	public void testUnitPropergation_Formula02() throws IOException {
 		ClauseSet clauseSet = new ClauseSet("formula/formula02.cnf");
 		System.out.println(clauseSet);
-		Clause hasEmptyClause = clauseSet.unitPropagation();
+		Clause hasEmptyClause = clauseSet.unitPropagation(new Stack<Variable>(), 0);
 		assertNull(hasEmptyClause);
 	}
 }

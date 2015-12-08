@@ -1,15 +1,8 @@
 package dataStructure;
 
-import java.awt.geom.CubicCurve2D;
 import java.io.IOException;
-import java.rmi.server.UID;
-import java.util.ArrayList;
-import java.util.Collection;
 import java.util.HashMap;
-import java.util.Iterator;
-import java.util.List;
-import java.util.Map;
-import java.util.Map.Entry;
+import java.util.Stack;
 import java.util.Vector;
 
 import dataStructure.Clause.ClauseState;
@@ -88,7 +81,7 @@ public class ClauseSet {
 		this.variables = variables;
 		this.clauses = new Vector<>(clauses.length);
 		this.units = new Vector<>();
-		this.varNum = variables.size();
+		this.varNum = variables.size() / 2;
 		init(clauses);
 	}
 
@@ -116,7 +109,7 @@ public class ClauseSet {
 			this.units.addElement(currentClause);
 			this.clauses.addElement(currentClause);
 		} else if (currentState == ClauseState.EMPTY) {
-			return;
+			throw new IllegalStateException();
 		} else {
 			this.clauses.addElement(currentClause);
 		}
@@ -128,7 +121,7 @@ public class ClauseSet {
 	 * 
 	 * @return null if no empty clause exists or the empty clause.
 	 */
-	public Clause unitPropagation() {
+	public Clause unitPropagation(Stack<Variable> stack, int currentDecisionLevel) {
 		if (units.size() == 0) {
 			return null;
 		}		
@@ -136,15 +129,19 @@ public class ClauseSet {
 		Vector<Clause> newUnits = new Vector<Clause>();
 		Vector<Clause> unitsCopie = new Vector<>();
 		unitsCopie.addAll(units);
-
 		for (Clause currentClause : unitsCopie) {
 			if(currentClause.isSat()){
 				units.remove(currentClause);	
 				continue;
 			}
 			int currentUnassigned = currentClause.getUnassigned(variables);
+			if (currentUnassigned == 0) {
+				return currentClause;
+			}
 			boolean polarity = currentClause.getPolarity(currentUnassigned);
-			Clause emptyClause = variables.get(currentUnassigned).assign(polarity, variables, newUnits);	
+			Clause emptyClause = variables
+					.get(currentUnassigned)
+					.assign(polarity, variables, newUnits, stack, currentDecisionLevel);	
 			units.remove(currentClause);	
 			if (emptyClause != null) {
 				return emptyClause;
@@ -154,7 +151,7 @@ public class ClauseSet {
 		if(newUnits.size() == 0){
 			return null;
 		}
-		return unitPropagation();
+		return unitPropagation(stack, currentDecisionLevel);
 	}
 
 	@Override
