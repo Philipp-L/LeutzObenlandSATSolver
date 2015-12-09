@@ -74,7 +74,6 @@ public class CDCL {
 	}
 
 	protected Clause resolve(Clause c1, Clause c2) {
-		System.out.println(c1 + "  " + c2);
 		for (int literalC1 : c1.getLiterals()) {
 			for (int literalC2 : c2.getLiterals()) {
 				if (literalC1 == -literalC2) {
@@ -90,14 +89,15 @@ public class CDCL {
 				}
 			}
 		}
-		Set<Integer> literals = new HashSet<>(c1.getLiterals().size() + c2.getLiterals().size());
-		literals.addAll(c1.getLiterals());
-		literals.addAll(c2.getLiterals());
-		return new Clause(new Vector<>(literals), variables);
+		System.err.println("Die Clause und Reason haben sich kein Literal geteilt, sie waren unabhänig! - Clause resolve");
+		System.out.println(variables.get(c1.getLiterals().get(1)).getLevel());
+		System.out.println(currentDecisionLevel);
+		System.exit(0);
+		return null;
 	}
 
-	
-	
+
+
 	/**
 	 * Findet die 1UIP Clause Backtrackt dabei durch den Stack - sollte
 	 * wietermachen bsi Clause unit ist
@@ -108,39 +108,56 @@ public class CDCL {
 	 *            Grund für Zuweißung des Conflicts
 	 * @return Neu gelernte Klausel
 	 */
-	public Clause get1UIP(Clause conflict, Clause reason) {
-			if (reason == null) {
-			currentDecisionLevel--;
-			System.err.println("No reason!");
-			//TODO Decrease
-			return conflict;
+	public Clause get1UIP(Clause conflict, Variable nextVar) {
+		Clause reason = nextVar.reason;
+		if (reason == null) {				
+			System.out.println(conflict);
+			System.out.println("Das hätte nicht passieren dürfen - Vorher KANN nurnoch eine Variable auf höchsten Level gewesen sien");
+			for(int i : conflict.getLiterals()){
+				System.out.println(variables.get(i).getLevel() + "  " + currentDecisionLevel);
+			}
+			System.exit(0);
 		}
 
 		Clause newClause = resolve(conflict, reason);
 
+		System.out.println(conflict + "   " + reason);
 		int levelCounter = 0;
 
 		//Wie viele Variablen sind auf höchstem Decision Level?
 		for (Integer i : newClause.getLiterals()) {
-			System.out.println(variables.get(i).getLevel() +" " + currentDecisionLevel);
-			if (variables.get(i).getLevel() >= currentDecisionLevel) {
+			//System.out.println(variables.get(i).getLevel() +" " + currentDecisionLevel + " " + i);
+			if (variables.get(i).getLevel() == currentDecisionLevel) {
 				levelCounter++;
+			}
+
+			if(variables.get(i).getLevel() > currentDecisionLevel){
+				System.err.println("Das sollte nicht passieren - decision level der variable kann nicht übermaximal sein");
+				System.exit(0);
 			}
 		}
 		//Es ist genau eine Variable auf höchstem Decision Level!
-		if (levelCounter <= 1) {
+		if (levelCounter == 1) {
 			newClause.initWatch(variables);
 			System.out.println("learn Clause" + newClause);
+			nextVar.unAssign();
 			return newClause;
+		}
+		
+		else if(levelCounter == 0){
+			System.err.println(newClause + " Hier is was schief glaufen - keine Variable auf höchstem level - woher kam die prpagation?");
+			System.exit(0);
 		}
 
 		//Sollte eigentlich nie passieren!
 		else if (stack.empty()) {
+			System.err.println("Wir haben den Stack leer gemacht - das kann nicht passieren! Vorher kann nurnoch eine Variable auf höchstem Level  gewesen sein");
 			newClause.initWatch(variables);
+			nextVar.unAssign();
 			return newClause;
 		}
-
-		return get1UIP(newClause, getNextVar().reason);
+		nextVar.unAssign();
+		return get1UIP(newClause, getNextVar());
 	}
 
 	/**
@@ -152,58 +169,48 @@ public class CDCL {
 	 * @return backtrack Level
 	 */
 	public int analyseConflict(Clause conflict) {
-		Clause reason = getNextVar().reason;
-		Clause newClause = conflict;
-		newClause = get1UIP(newClause, reason);
-		/**
-		 * TODO: Idee:
-		 * Wir haben eine neue Klausel zum lernen. Diese ist bis jetzt EMPTY,
-		 * da alle Variablen belegt sind. Nun poppen wir so lange Variablen
-		 * vom Stack und unassign sie, bis eine der Variablen in der neuen 
-		 * Clausel enthalten ist. Dadurch bekommen wir eine Unit-Klausel.
-		 * Dann poppen wir noch alle Variablen aus dem aktuellen Level,
-		 * lernen die Klausel.
-
-		Variable nextVar;
-		while ((nextVar = getNextVar()) != null) {
-			if (newClause.getLiterals().contains(nextVar.getId())
-					|| newClause.getLiterals().contains(-nextVar.getId())) {
-				System.out.println("Found first: " + nextVar.getId() + " with reason: " + nextVar.reason);
-				while ((nextVar = getNextVar()) != null) {
-					if (nextVar.reason == null) {
-						clauses.initNewClause(newClause);
-						System.out.println("Learned clausel: " + newClause);
-						System.out.println("New level: " + stack.peek().getLevel() + " <=> " + currentDecisionLevel);
-						return stack.peek().getLevel();
-					}
-				}
-				return -1;
-			}
+		Clause reason = stack.peek().reason;
+		if(reason == null){
+			System.err.println("Conflict Hätte Unit sein müssen!");
+			System.exit(0);
 		}
-		return -1;
 
-		 */
-
-		//TODO - wir haben iene 1UIP - Solange Backtracken (stack poppen) wie die neue KLausel unit bleibt!
-		//TODO - Neue KLausel der Klauselmenge hinzufügen, sie ist automatisch unit - unit propagation ausführen.
-
+		Clause newClause = conflict;
+		newClause = get1UIP(newClause, getNextVar());
 		newClause.initWatch(variables);
+
+		if(newClause.reWatch(variables, 0) != ClauseState.EMPTY){
+			System.err.println("Neue Variable MUSS Empty sein, sonst haben wir zu lang resovled!!");
+			System.exit(0);
+		}
+
 		while(newClause.reWatch(variables, 0) == ClauseState.EMPTY){
 			Variable nextVar = getNextVar();
 			if(nextVar.reason == null){
 				currentDecisionLevel--;
 			}
+			nextVar.unAssign();
 		}
+
+		if(newClause.reWatch(variables, 0) != ClauseState.UNIT){
+			System.err.println("JETZT muss sie unit sein, sonst ging was schief!");
+			System.exit(0);
+		}
+
 		units.addElement(newClause);
 		clauses.addNewClause(newClause);
-		System.out.println("newClause is now" + newClause);
 		return currentDecisionLevel;
 	}
 
 	private Variable getNextVar() {
+		if(stack.empty()){
+			System.out.println("Should not happen");
+			System.exit(0);
+		}
 		Variable currentVariable = stack.pop();
-		currentVariable.unAssign();
-		// TODO: decrease activity?
+		System.out.println("POP " + currentVariable.getId());
+		//currentVariable.unAssign();
+		// TODO: unassign variable when needed!
 		return currentVariable;
 	}
 
@@ -228,8 +235,8 @@ public class CDCL {
 			Clause emptyClause = this.clauses.unitPropagation(stack, currentDecisionLevel);
 			System.out.println("Unit propagation -> empty clause: " + emptyClause);
 			if (emptyClause != null) {
-				this.currentDecisionLevel = analyseConflict(emptyClause);
-				if (this.currentDecisionLevel == 0) {
+				int returnedLevel = analyseConflict(emptyClause);
+				if (returnedLevel == 0) {
 					return false;
 				}
 			} else if (clauses.allClausesAreSAT()) {
@@ -239,7 +246,6 @@ public class CDCL {
 				Variable nextVariable = getHighestAcitivityVariable();
 				System.out.println("Decision: Assign next variable to false: " + nextVariable.getId());
 				emptyClause = nextVariable.assign(false, null, variables, units, stack, currentDecisionLevel);
-				System.out.println("Empty clause from assignment: " + emptyClause);
 			}
 		}
 	}

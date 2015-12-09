@@ -92,7 +92,6 @@ public class Variable {
 		this.level = currentDecisionLevel;
 		this.reason = reason;
 		stack.push(this);
-		
 		Vector<Clause> watchedCopie = new Vector<>();
 		watchedCopie.addAll(watched);
 		
@@ -152,6 +151,8 @@ public class Variable {
 	}
 
 	public void unAssign() {
+		this.reason = null;
+		this.level = 0;
 		this.state = State.OPEN;
 	}
 	

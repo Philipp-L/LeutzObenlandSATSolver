@@ -140,12 +140,17 @@ public class ClauseSet {
 			}
 			int currentUnassigned = currentClause.getUnassigned(variables);
 			if (currentUnassigned == 0) {
+				System.err.println("Komischer Fehler");
+				System.exit(0);
 				return currentClause;
 			}
 			boolean polarity = currentClause.getPolarity(currentUnassigned);
 			Clause emptyClause = variables.get(currentUnassigned).assign(polarity, currentClause, variables, newUnits, stack, currentDecisionLevel);	
+			System.out.println("Assign Variable By Propagation " + variables.get(currentUnassigned).getId() +"  " + polarity+ " Reason " + currentClause.getLiterals());
 			units.remove(currentClause);	
+			
 			if (emptyClause != null) {
+				System.out.println(emptyClause);
 				return emptyClause;
 			}
 		}
