@@ -8,6 +8,7 @@ import java.util.Stack;
 import java.util.Vector;
 
 import dataStructure.Clause;
+import dataStructure.Clause.ClauseState;
 import dataStructure.ClauseSet;
 import dataStructure.Variable;
 import dataStructure.Variable.State;
@@ -73,6 +74,7 @@ public class CDCL {
 	}
 
 	protected Clause resolve(Clause c1, Clause c2) {
+		System.out.println(c1 + "  " + c2);
 		for (int literalC1 : c1.getLiterals()) {
 			for (int literalC2 : c2.getLiterals()) {
 				if (literalC1 == -literalC2) {
@@ -83,13 +85,19 @@ public class CDCL {
 					literals.addAll(c2.getLiterals());
 					literals.remove(literalC1);
 					literals.remove(literalC2);
-					return new Clause(new Vector<>(literals), variables);
+					Clause newClause = new Clause(new Vector<>(literals), variables);
+					return newClause;
 				}
 			}
 		}
-		return null;
+		Set<Integer> literals = new HashSet<>(c1.getLiterals().size() + c2.getLiterals().size());
+		literals.addAll(c1.getLiterals());
+		literals.addAll(c2.getLiterals());
+		return new Clause(new Vector<>(literals), variables);
 	}
 
+	
+	
 	/**
 	 * Findet die 1UIP Clause Backtrackt dabei durch den Stack - sollte
 	 * wietermachen bsi Clause unit ist
@@ -101,35 +109,37 @@ public class CDCL {
 	 * @return Neu gelernte Klausel
 	 */
 	public Clause get1UIP(Clause conflict, Clause reason) {
-		String tmp = conflict + "    " + reason;
-		System.out.println(tmp);
-		System.out.println(new String(new char[tmp.length()]).replace('\0', '-'));
-
-		if (reason == null) {
+			if (reason == null) {
+			currentDecisionLevel--;
 			System.err.println("No reason!");
-			return null;
+			//TODO Decrease
+			return conflict;
 		}
 
 		Clause newClause = resolve(conflict, reason);
 
-		System.out.print(new String(new char[(tmp.length() - newClause.toString().length()) / 2]).replace('\0', ' '));
-		System.out.println(newClause);
-		System.out.println();
 		int levelCounter = 0;
 
+		//Wie viele Variablen sind auf höchstem Decision Level?
 		for (Integer i : newClause.getLiterals()) {
+			System.out.println(variables.get(i).getLevel() +" " + currentDecisionLevel);
 			if (variables.get(i).getLevel() >= currentDecisionLevel) {
 				levelCounter++;
 			}
 		}
-		System.out.println("Level counter: " + levelCounter);
+		//Es ist genau eine Variable auf höchstem Decision Level!
 		if (levelCounter <= 1) {
+			newClause.initWatch(variables);
+			System.out.println("learn Clause" + newClause);
 			return newClause;
 		}
 
+		//Sollte eigentlich nie passieren!
 		else if (stack.empty()) {
+			newClause.initWatch(variables);
 			return newClause;
 		}
+
 		return get1UIP(newClause, getNextVar().reason);
 	}
 
@@ -145,7 +155,6 @@ public class CDCL {
 		Clause reason = getNextVar().reason;
 		Clause newClause = conflict;
 		newClause = get1UIP(newClause, reason);
-
 		/**
 		 * TODO: Idee:
 		 * Wir haben eine neue Klausel zum lernen. Diese ist bis jetzt EMPTY,
@@ -154,7 +163,6 @@ public class CDCL {
 		 * Clausel enthalten ist. Dadurch bekommen wir eine Unit-Klausel.
 		 * Dann poppen wir noch alle Variablen aus dem aktuellen Level,
 		 * lernen die Klausel.
-		 */
 
 		Variable nextVar;
 		while ((nextVar = getNextVar()) != null) {
@@ -173,6 +181,23 @@ public class CDCL {
 			}
 		}
 		return -1;
+
+		 */
+
+		//TODO - wir haben iene 1UIP - Solange Backtracken (stack poppen) wie die neue KLausel unit bleibt!
+		//TODO - Neue KLausel der Klauselmenge hinzufügen, sie ist automatisch unit - unit propagation ausführen.
+
+		newClause.initWatch(variables);
+		while(newClause.reWatch(variables, 0) == ClauseState.EMPTY){
+			Variable nextVar = getNextVar();
+			if(nextVar.reason == null){
+				currentDecisionLevel--;
+			}
+		}
+		units.addElement(newClause);
+		clauses.addNewClause(newClause);
+		System.out.println("newClause is now" + newClause);
+		return currentDecisionLevel;
 	}
 
 	private Variable getNextVar() {
@@ -200,13 +225,11 @@ public class CDCL {
 
 	public boolean solve() {
 		while (true) {
-			System.out.println();
 			Clause emptyClause = this.clauses.unitPropagation(stack, currentDecisionLevel);
 			System.out.println("Unit propagation -> empty clause: " + emptyClause);
-			System.out.println("Stack: " + stackToString());
 			if (emptyClause != null) {
 				this.currentDecisionLevel = analyseConflict(emptyClause);
-				if (this.currentDecisionLevel == -1) {
+				if (this.currentDecisionLevel == 0) {
 					return false;
 				}
 			} else if (clauses.allClausesAreSAT()) {

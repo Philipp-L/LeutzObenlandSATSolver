@@ -61,6 +61,10 @@ public class ClauseSet {
 		}
 	}
 
+	public void addNewClause (Clause clause){
+		clauses.addElement(clause);
+	}
+	
 	private Variable addVariable(Integer literal) {
 		Variable variable = variables.get(literal);
 		if (variable == null) {
