@@ -7,6 +7,8 @@ import java.util.Set;
 import java.util.Stack;
 import java.util.Vector;
 
+import javax.swing.plaf.synth.SynthSpinnerUI;
+
 import dataStructure.Clause;
 import dataStructure.Clause.ClauseState;
 import dataStructure.ClauseSet;
@@ -16,7 +18,7 @@ import dataStructure.Variable.State;
 public class CDCL {
 
 	public final ClauseSet clauses;
-	public final Stack<Variable> stack;
+	private final Stack<Variable> stack;
 	public int currentDecisionLevel;
 	public final HashMap<Integer, Variable> variables;
 	public final Vector<Clause> units;
@@ -89,10 +91,11 @@ public class CDCL {
 				}
 			}
 		}
-		System.err.println("Die Clause und Reason haben sich kein Literal geteilt, sie waren unabhänig! - Clause resolve");
+		System.out.println("Die Clause und Reason haben sich kein Literal geteilt, sie waren unabhänig! - Clause resolve");
+		System.out.println(c1.getLiterals());
+		System.out.println(c2.getLiterals());
 		System.out.println(variables.get(c1.getLiterals().get(1)).getLevel());
 		System.out.println(currentDecisionLevel);
-		System.exit(0);
 		return null;
 	}
 
@@ -113,14 +116,18 @@ public class CDCL {
 		if (reason == null) {				
 			System.out.println(conflict);
 			System.out.println("Das hätte nicht passieren dürfen - Vorher KANN nurnoch eine Variable auf höchsten Level gewesen sien");
-			for(int i : conflict.getLiterals()){
-				System.out.println(variables.get(i).getLevel() + "  " + currentDecisionLevel);
-			}
+			System.out.println(nextVar.getId());
+			System.out.println(conflict.getLiterals());
 			System.exit(0);
 		}
 
 		Clause newClause = resolve(conflict, reason);
-
+		//Es gab einen Branch im Implikationsgraph - wir gehen weiter die Tabelle durch,
+		//bis side die branches wieder treffen
+		if(newClause == null){
+			nextVar.unAssign();
+			return get1UIP(conflict, getNextVar());
+		}
 		System.out.println(conflict + "   " + reason);
 		int levelCounter = 0;
 
@@ -132,7 +139,9 @@ public class CDCL {
 			}
 
 			if(variables.get(i).getLevel() > currentDecisionLevel){
+				
 				System.err.println("Das sollte nicht passieren - decision level der variable kann nicht übermaximal sein");
+				System.out.println(variables.get(i).getId() +"  " + variables.get(i).getLevel() + "  " + currentDecisionLevel);
 				System.exit(0);
 			}
 		}
@@ -145,7 +154,7 @@ public class CDCL {
 		}
 		
 		else if(levelCounter == 0){
-			System.err.println(newClause + " Hier is was schief glaufen - keine Variable auf höchstem level - woher kam die prpagation?");
+			System.err.println(newClause + " Hier is was schief glaufen - keine Variable auf höchstem level - woher kam die prpagation? LEVLE: " + currentDecisionLevel);
 			System.exit(0);
 		}
 
@@ -185,11 +194,31 @@ public class CDCL {
 		}
 
 		while(newClause.reWatch(variables, 0) == ClauseState.EMPTY){
+			getNextVar().unAssign();
+		}
+		while(newClause.reWatch(variables, 0) == ClauseState.UNIT){
 			Variable nextVar = getNextVar();
+			Clause oldReason = nextVar.reason;
+			State oldState = nextVar.getState();
+			int oldDecisionLevel = nextVar.getLevel(); 
+			
+			boolean assignment = true;
+			if(oldState == State.FALSE){
+				assignment = false;
+			}
+			
 			if(nextVar.reason == null){
 				currentDecisionLevel--;
 			}
 			nextVar.unAssign();
+			if(newClause.reWatch(variables, 0) != ClauseState.UNIT){
+				nextVar.assign(assignment, oldReason, variables, units, stack, oldDecisionLevel);
+				stack.push(nextVar);
+				break;
+			}
+			else{
+				nextVar.unAssign();
+			}
 		}
 
 		if(newClause.reWatch(variables, 0) != ClauseState.UNIT){
@@ -253,7 +282,7 @@ public class CDCL {
 	private String stackToString() {
 		String s = "";
 		for (Variable v : stack) {
-			s += (v.getId() + "("+v.getState()+")" + (v.reason == null ? "[d" + v.getLevel() + "]" : "[p" + v.getLevel() + "]") + ", ");
+			s += (v.getId() + "("+v.getState()+")" + (v.reason == null ? "[d" + v.getLevel() + "]" : "[p" + v.getLevel() + "]") + ", \n");
 		}
 		return s;
 	}

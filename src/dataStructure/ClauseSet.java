@@ -134,6 +134,9 @@ public class ClauseSet {
 		Vector<Clause> unitsCopie = new Vector<>();
 		unitsCopie.addAll(units);
 		for (Clause currentClause : unitsCopie) {
+			if(currentClause.reWatch(variables, 0) != ClauseState.UNIT){
+				continue;
+			}
 			if(currentClause.isSat()){
 				units.remove(currentClause);	
 				continue;
@@ -154,6 +157,8 @@ public class ClauseSet {
 				return emptyClause;
 			}
 		}
+		//alte units können jetzt nichmther unit sein!
+		units.clear();
 		units.addAll(newUnits);
 		if(newUnits.size() == 0){
 			return null;

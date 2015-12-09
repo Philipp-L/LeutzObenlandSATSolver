@@ -96,6 +96,7 @@ public class Variable {
 		watchedCopie.addAll(watched);
 		
 		for (Clause currentClause : watchedCopie) {
+			units.remove(currentClause);
 			ClauseState variableState = currentClause.reWatch(variables, this.id);
 			
 			if(variableState == ClauseState.EMPTY){
