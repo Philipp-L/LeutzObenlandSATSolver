@@ -84,100 +84,6 @@ public class CDCLTest {
 	}
 
 	@Test
-	public void testget1UIP() {
-		Vector<Clause> units = new Vector<>();
-
-		a.assign(true, null, variables, units, new Stack<Variable>(), 0);
-		b.assign(true, null, variables, units, new Stack<Variable>(), 0);
-		w.assign(false, null, variables, units, new Stack<Variable>(), 0);
-		x.assign(true, null, variables, units, new Stack<Variable>(), 0);
-		z.assign(false, null, variables, units, new Stack<Variable>(), 0);
-		y.assign(false, null, variables, units, new Stack<Variable>(), 0);
-
-		y.setReason(reason);
-		z.setReason(reasonsReason);
-
-		a.setLevel(1);
-		b.setLevel(1);
-		w.setLevel(1);
-		x.setLevel(2);
-		z.setLevel(2);
-		y.setLevel(1);
-
-		instance.currentDecisionLevel = 2;
-
-		variableStack.push(z);
-		variableStack.push(y);
-		assertTrue(instance.get1UIP(conflict, y).getLiterals()
-				.equals(new Vector<Integer>(Arrays.asList(3, 4, -2, -1))));
-
-	}
-
-	@Test
-	public void testget1UIPWithBacktrack() {
-		Vector<Clause> units = new Vector<>();
-		a.assign(true, null, variables, units, new Stack<Variable>(), 0);
-		b.assign(true, null, variables, units, new Stack<Variable>(), 0);
-		w.assign(false, null, variables, units, new Stack<Variable>(), 0);
-		z.assign(true, null, variables, units, new Stack<Variable>(), 0);
-		x.assign(false, null, variables, units, new Stack<Variable>(), 0);
-
-		x.setReason(new Clause(new Vector<Integer>(Arrays.asList(-1, -2, 3, -4, -6)), variables));
-		z.setReason(new Clause(new Vector<Integer>(Arrays.asList(-1, -2, 3, 4)), variables));
-		w.setReason(new Clause(new Vector<Integer>(Arrays.asList(-1, -2, -3)), variables));
-		b.setReason(new Clause(new Vector<Integer>(Arrays.asList(-1, 2)), variables));
-
-		a.setLevel(1);
-		b.setLevel(1);
-		w.setLevel(1);
-		x.setLevel(1);
-		z.setLevel(1);
-
-		instance.currentDecisionLevel = 1;
-
-		variableStack.push(a);
-		variableStack.push(b);
-		variableStack.push(w);
-		variableStack.push(z);
-		Clause conflict = new Clause(new Vector<Integer>(Arrays.asList(-1, -2, 3, -4, 6)), variables);
-		// System.err.println(instance.get1UIP(conflict,
-		// x.reason).getLiterals());
-		assertTrue(instance.get1UIP(conflict, x).getLiterals().equals(new Vector<Integer>(Arrays.asList(-1))));
-
-	}
-
-	@Test
-	public void testAnalyseConflict() {
-		Vector<Clause> units = new Vector<>();
-		a.assign(true, null, variables, units, new Stack<Variable>(), 0);
-		b.assign(true, null, variables, units, new Stack<Variable>(), 0);
-		w.assign(false, null, variables, units, new Stack<Variable>(), 0);
-		z.assign(true, null, variables, units, new Stack<Variable>(), 0);
-		x.assign(false, null, variables, units, new Stack<Variable>(), 0);
-
-		x.setReason(new Clause(new Vector<Integer>(Arrays.asList(-1, -2, 3, -4, -6)), variables));
-		z.setReason(new Clause(new Vector<Integer>(Arrays.asList(-1, -2, 3, 4)), variables));
-		w.setReason(new Clause(new Vector<Integer>(Arrays.asList(-1, -2, -3)), variables));
-		b.setReason(new Clause(new Vector<Integer>(Arrays.asList(-1, 2)), variables));
-
-		a.setLevel(1);
-		b.setLevel(1);
-		w.setLevel(1);
-		x.setLevel(1);
-		z.setLevel(1);
-
-		instance.currentDecisionLevel = 1;
-
-		variableStack.push(a);
-		variableStack.push(b);
-		variableStack.push(w);
-		variableStack.push(z);
-		Clause conflict = new Clause(new Vector<Integer>(Arrays.asList(-1, -2, 3, -4, 6)), variables);
-		System.out.println(instance.analyseConflict(conflict));
-		assertTrue(instance.analyseConflict(conflict) == 1);
-	}
-
-	@Test
 	public void testSolveFailure() throws IOException {
 		assertFalse(new CDCL(new ClauseSet("small_aim/no/aim-50-1_6-no-1.cnf")).solve());
 		assertFalse(new CDCL(new ClauseSet("small_aim/no/aim-50-1_6-no-2.cnf")).solve());
@@ -192,21 +98,21 @@ public class CDCLTest {
 	@Test
 	public void testSolveSuccess() throws IOException {
 		assertTrue(new CDCL(new ClauseSet("small_aim/yes/aim-50-1_6-yes1-1.cnf")).solve());
-	//	assertTrue(new CDCL(new ClauseSet("small_aim/yes/aim-50-1_6-yes1-2.cnf")).solve());
-		//assertTrue(new CDCL(new ClauseSet("small_aim/yes/aim-50-1_6-yes1-3.cnf")).solve());
-	//	assertTrue(new CDCL(new ClauseSet("small_aim/yes/aim-50-1_6-yes1-4.cnf")).solve());
-	//	assertTrue(new CDCL(new ClauseSet("small_aim/yes/aim-50-2_0-yes1-1.cnf")).solve());
-	//	assertTrue(new CDCL(new ClauseSet("small_aim/yes/aim-50-2_0-yes1-2.cnf")).solve());
-	//	assertTrue(new CDCL(new ClauseSet("small_aim/yes/aim-50-2_0-yes1-3.cnf")).solve());
-	//	assertTrue(new CDCL(new ClauseSet("small_aim/yes/aim-50-2_0-yes1-4.cnf")).solve());
-	//	assertTrue(new CDCL(new ClauseSet("small_aim/yes/aim-50-3_4-yes1-1.cnf")).solve());
-	//	assertTrue(new CDCL(new ClauseSet("small_aim/yes/aim-50-3_4-yes1-2.cnf")).solve());
-	//	assertTrue(new CDCL(new ClauseSet("small_aim/yes/aim-50-3_4-yes1-3.cnf")).solve());
-	//	assertTrue(new CDCL(new ClauseSet("small_aim/yes/aim-50-3_4-yes1-4.cnf")).solve());
-	//	assertTrue(new CDCL(new ClauseSet("small_aim/yes/aim-50-6_0-yes1-1.cnf")).solve());
-	//	assertTrue(new CDCL(new ClauseSet("small_aim/yes/aim-50-6_0-yes1-2.cnf")).solve());
-	//	assertTrue(new CDCL(new ClauseSet("small_aim/yes/aim-50-6_0-yes1-3.cnf")).solve());
-	//	assertTrue(new CDCL(new ClauseSet("small_aim/yes/aim-50-6_0-yes1-4.cnf")).solve());
+		assertTrue(new CDCL(new ClauseSet("small_aim/yes/aim-50-1_6-yes1-2.cnf")).solve());
+		assertTrue(new CDCL(new ClauseSet("small_aim/yes/aim-50-1_6-yes1-3.cnf")).solve());
+		assertTrue(new CDCL(new ClauseSet("small_aim/yes/aim-50-1_6-yes1-4.cnf")).solve());
+		assertTrue(new CDCL(new ClauseSet("small_aim/yes/aim-50-2_0-yes1-1.cnf")).solve());
+		assertTrue(new CDCL(new ClauseSet("small_aim/yes/aim-50-2_0-yes1-2.cnf")).solve());
+		assertTrue(new CDCL(new ClauseSet("small_aim/yes/aim-50-2_0-yes1-3.cnf")).solve());
+		assertTrue(new CDCL(new ClauseSet("small_aim/yes/aim-50-2_0-yes1-4.cnf")).solve());
+		assertTrue(new CDCL(new ClauseSet("small_aim/yes/aim-50-3_4-yes1-1.cnf")).solve());
+		assertTrue(new CDCL(new ClauseSet("small_aim/yes/aim-50-3_4-yes1-2.cnf")).solve());
+		assertTrue(new CDCL(new ClauseSet("small_aim/yes/aim-50-3_4-yes1-3.cnf")).solve());
+		assertTrue(new CDCL(new ClauseSet("small_aim/yes/aim-50-3_4-yes1-4.cnf")).solve());
+		assertTrue(new CDCL(new ClauseSet("small_aim/yes/aim-50-6_0-yes1-1.cnf")).solve());
+		assertTrue(new CDCL(new ClauseSet("small_aim/yes/aim-50-6_0-yes1-2.cnf")).solve());
+		assertTrue(new CDCL(new ClauseSet("small_aim/yes/aim-50-6_0-yes1-3.cnf")).solve());
+		assertTrue(new CDCL(new ClauseSet("small_aim/yes/aim-50-6_0-yes1-4.cnf")).solve());
 	}
 	@Test
 	public void TestSolveSimple() throws IOException{

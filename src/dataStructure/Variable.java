@@ -92,9 +92,9 @@ public class Variable {
 		this.level = currentDecisionLevel;
 		this.reason = reason;
 		stack.push(this);
+		
 		Vector<Clause> watchedCopie = new Vector<>();
 		watchedCopie.addAll(watched);
-		
 		for (Clause currentClause : watchedCopie) {
 			ClauseState variableState = currentClause.reWatch(variables, this.id);
 			
@@ -103,6 +103,10 @@ public class Variable {
 			}
 			else if(variableState == ClauseState.UNIT){
 				units.add(currentClause);
+			} else {
+				if (units.remove(currentClause)) {
+					System.out.println("Remove non unit clausel: " + currentClause);
+				}
 			}
 		}
 		return null;
@@ -150,10 +154,13 @@ public class Variable {
 		this.level = level;
 	}
 
-	public void unAssign() {
-		this.reason = null;
+	public void unAssign(HashMap<Integer, Variable> variables) {
 		this.level = 0;
 		this.state = State.OPEN;
+		this.reason = null;
+		for (Clause currentClause : watched) {
+			currentClause.reWatch(variables, 0);
+		}
 	}
 	
 	public float getAcivity(){

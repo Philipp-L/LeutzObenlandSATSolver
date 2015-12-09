@@ -62,7 +62,11 @@ public class ClauseSet {
 	}
 
 	public void addNewClause (Clause clause){
-		clauses.addElement(clause);
+		if (!clauses.contains(clause)) {
+			clauses.addElement(clause);
+		} else {
+			//throw new IllegalStateException(clause.toString());
+		}
 	}
 	
 	private Variable addVariable(Integer literal) {
@@ -131,18 +135,15 @@ public class ClauseSet {
 		}		
 
 		Vector<Clause> newUnits = new Vector<Clause>();
-		Vector<Clause> unitsCopie = new Vector<>();
-		unitsCopie.addAll(units);
-		for (Clause currentClause : unitsCopie) {
+		for (Clause currentClause : new Vector<>(units)) {
 			if(currentClause.isSat()){
 				units.remove(currentClause);	
 				continue;
 			}
 			int currentUnassigned = currentClause.getUnassigned(variables);
 			if (currentUnassigned == 0) {
-				System.err.println("Komischer Fehler");
-				System.exit(0);
-				return currentClause;
+				units.remove(currentClause);
+				continue;
 			}
 			boolean polarity = currentClause.getPolarity(currentUnassigned);
 			Clause emptyClause = variables.get(currentUnassigned).assign(polarity, currentClause, variables, newUnits, stack, currentDecisionLevel);	
@@ -174,7 +175,7 @@ public class ClauseSet {
 	public String clausesToString() {
 		String res = "";
 		for (Clause clause : clauses)
-			res += clause + "\n";
+			res += clause + " |= " + clause.isSat() + "\n";
 		return res;
 	}
 
