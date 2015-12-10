@@ -1,6 +1,7 @@
 package CDCLSolver;
 
 import java.io.IOException;
+import java.util.Collection;
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.HashSet;
@@ -15,12 +16,16 @@ import dataStructure.Variable.State;
 
 public class CDCL {
 
-	public final ClauseSet clauses;
-	public final Stack<Variable> stack;
-	public int currentDecisionLevel;
-	public final HashMap<Integer, Variable> variables;
-	public final Vector<Clause> units;
-
+	private final float INCREASE_FACTOR = (float)1.1;
+	private final float DECREASE_FACTOR = (float)0.95;
+	
+	private int currentDecisionLevel;
+	private final ClauseSet clauses;
+	private final Stack<Variable> stack;
+	private final HashMap<Integer, Variable> variables;
+	private final Vector<Clause> units;
+	private Clause lastLearned = null;
+	
 	public static void main(String[] args) throws IOException {
 		CDCL instance = new CDCL(new ClauseSet("formula/formula02.cnf"));
 		instance.solve();
@@ -29,7 +34,6 @@ public class CDCL {
 	public CDCL(ClauseSet instance) {
 		this(instance, new Stack<Variable>(), instance.getVariables());
 	}
-
 	public CDCL(ClauseSet instance, Stack<Variable> stack, HashMap<Integer, Variable> variables) {
 		this.clauses = instance;
 		this.stack = stack;
@@ -69,8 +73,7 @@ public class CDCL {
 	}
 
 	/**
-	 * Findet die 1UIP Clause Backtrackt dabei durch den Stack - sollte
-	 * wietermachen bsi Clause unit ist
+	 * Findet die 1UIP Clause durch abbauen des Stacks und resolvieren der reasons
 	 * 
 	 * @param conflict
 	 *            Conflict Klausel für Empty Klausel
@@ -88,9 +91,17 @@ public class CDCL {
 		return newClause;
 	}
 
-	private boolean is1UIP(final Clause c) {
+	
+	/**Überprüft ob eine gegebene Klausel die 1UIP ist
+	 * Das kriterieum hierfür ist die Anzahl an Variablen, welche
+	 * auf höchstem Decision Level assigned wurden, ist diese 1, ist die Klausel 1UIP
+	 * 
+	 * @param clauseToCheck Klausel für die überprüft wird, ob sie 1UIP ist
+	 * @return ergebnis, ob die Klausel 1UIP war
+	 */
+	private boolean is1UIP(Clause clauseToCheck) {
 		int numOfMaxLvl = 0;
-		for (final int i : c.getLiterals()) {
+		for (final int i : clauseToCheck.getLiterals()) {
 			if (variables.get(i).getLevel() == currentDecisionLevel)
 				numOfMaxLvl++;
 		}
@@ -115,25 +126,64 @@ public class CDCL {
 
 		Clause newClause = get1UIP(conflict, reason);
 		System.out.println("Learn: " + newClause);
+		learnNewUnitClause(newClause);
+		return computeBacktrackLevel(newClause);
+	}
+
+	
+	/**
+	 * Fügt eine gelernte Klausel der Klausemenge hinzu,
+	 * 
+	 * @param newClause neue unit klausel die gelernt wird
+	 */
+	private void learnNewUnitClause(Clause newClause) {
+		increaseAcitvityOfVariables(newClause);
 		clauses.addNewClause(newClause);
 		units.addElement(newClause);
 		lastLearned = newClause;
-		return computeBacktrackLevel(newClause);
 	}
-	Clause lastLearned = null;
-	
-	private Variable chooseLiteral(Clause newClause) {
-		while(true) {
-			Variable v = stack.pop();
-			for (final Integer i : newClause.getLiterals()) {
-				if (Math.abs(i) == v.getId()) {
-					return v;
-				}
-			}
-			v.unAssign(variables);
+
+	/**
+	 * Erhöt die Aktivität aller Variablen einer gegebenen KLausel
+	 * Wird aufgerufen, nachdem die KLausel gelernt wurde
+	 * 
+	 * @param newClause gegene Klausel
+	 */
+	private void increaseAcitvityOfVariables(Clause newClause) {
+		Vector<Integer> literals = newClause.getLiterals();
+		for(int currentLiteral : literals){
+			variables.get(currentLiteral).computeAcitivity(INCREASE_FACTOR);
 		}
 	}
 
+	/**
+	 * Sucht die nächste Variable vom Stack für eine Resolution,
+	 * Dies ist wichtig, falls sich durch Unitpropagation ein
+	 * verzweigter Abhänigkeitsbaum ergebene hat, es muss für die Resolution von einem 
+	 * Konflikt aus der Richtige Pfad zur 1UIP zurückverfolgt werden
+	 * 
+	 * @param newClause Klausel anhand dererer die 1UIP zurückverfolgt wird
+	 * @return Nächste Variable deren Reason auf dem weg zur 1uip liegt
+	 */
+	private Variable chooseLiteral(Clause newClause) {
+		while(true) {
+			Variable nextVariableFromStack = stack.pop();
+			for (final Integer i : newClause.getLiterals()) {
+				if (Math.abs(i) == nextVariableFromStack.getId()) {
+					return nextVariableFromStack;
+				}
+			}
+			nextVariableFromStack.unAssign(variables);
+		}
+	}
+
+	/**Gibt das Level zurück auf das gebacktrackt werden muss
+	 * Hierbei handelt es sich um das 2. höchste Level, auf dem Variablen
+	 * der Klausel zugewiesen wurden
+	 * 
+	 * @param newClause Klausel für die das Backtracklevel gesucht wird
+	 * @return das Backtracklevel
+	 */
 	private int computeBacktrackLevel(Clause newClause) {
 		int level = 0;
 		for (final Integer literal : newClause.getLiterals()) {
@@ -146,6 +196,10 @@ public class CDCL {
 		return level;
 	}
 
+	/** Gibt die Nächste variable der Assigned werden soll zurück.
+	 * Die auswahl geschieht aufgrund der Aktivität
+	 * @return die aktivste Variable
+	 */
 	private Variable getNextVar() {
 		float maxAcivity = Float.NEGATIVE_INFINITY;
 		Variable currentMaxVariable = null;
@@ -162,6 +216,9 @@ public class CDCL {
 		return currentMaxVariable;
 	}
 
+	/**Löst die gegebene SAT instanz
+	 * @return true wenn die Instannz lösbar ist, sonst false
+	 */
 	public boolean solve() {
 		while (true) {
 			System.out.println();
@@ -185,11 +242,26 @@ public class CDCL {
 					return false;
 				}
 				System.out.println("Decision: Assign next variable to false: " + nextVariable.getId());
+				decreaseAcivityOfAllVariables();
 				emptyClause = nextVariable.assign(false, null, variables, units, stack, currentDecisionLevel);
 			}
 		}
 	}
 
+	/**
+	 * Senkt die Aktivität aller Variablen um den festgelegten Faktor
+	 * Wird aufgerufen wenn eine neue Variable durch Decision gelernt wird
+	 */
+	private void decreaseAcivityOfAllVariables() {
+		Collection<Variable> variableList = variables.values();
+		for(Variable currentVariable : variableList){
+			currentVariable.computeAcitivity(DECREASE_FACTOR);
+		}
+	}
+
+	/** Löst alle bis zum gegebene level assigned variablen wieder aus dem Stack
+	 * @param level level auf das gebacktracked wird
+	 */
 	private void backtrackToLevel(int level) {
 		while (!stack.isEmpty() && stack.peek().getLevel() > level) {
 			stack.pop().unAssign(variables);

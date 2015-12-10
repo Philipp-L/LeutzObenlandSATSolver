@@ -171,13 +171,17 @@ public class Clause {
 		return ClauseState.EMPTY;
 	}
 
-	private void removeAndReplaceWatchedLiteral(int literal1, int literal2) {
-		variables.get(literal1).removeWatchedBy(this);
-		variables.get(literal2).isWatchedBy(this);
-		if (literal1 == lit1) {
-			lit1 = literal2;
+	/** Setzt ein gewatchtes literal auf ein neues literal um
+	 * @param literalToBeRemoved
+	 * @param literalToBeWatched
+	 */
+	private void removeAndReplaceWatchedLiteral(int literalToBeRemoved, int literalToBeWatched) {
+		variables.get(literalToBeRemoved).removeWatchedBy(this);
+		variables.get(literalToBeWatched).isWatchedBy(this);
+		if (literalToBeRemoved == lit1) {
+			lit1 = literalToBeWatched;
 		} else {
-			lit2 = literal2;
+			lit2 = literalToBeWatched;
 		}
 	}
 

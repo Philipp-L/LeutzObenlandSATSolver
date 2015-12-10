@@ -14,8 +14,6 @@ import parser.DimacsParser;
  */
 public class ClauseSet {
 
-	private final float INCREASE_FACTOR = (float)1.1;
-	private final float DECREASE_FACTOR = (float)0.95;
 
 	/* Number of variables */
 	private int varNum;
@@ -93,31 +91,25 @@ public class ClauseSet {
 		init(clauses);
 	}
 
+	/**
+	 * Initialisiert eine Menge von Klauseln
+	 * @param clauses Klauselmenge
+	 */
 	private void init(Clause[] clauses) {
 		for (Clause currentClause : clauses) {
-			ClauseState currentState = currentClause.initWatch(variables);
-			if (currentState == ClauseState.UNIT) {
-				this.units.addElement(currentClause);
-				this.clauses.addElement(currentClause);
-			} else if (currentState == ClauseState.EMPTY) {
-				continue;
-			} else {
-				this.clauses.addElement(currentClause);
-			}
+			initNewClause(currentClause);
 		}
 	}
 
 	/**
 	 * Initialisiert eine neue Klausel
-	 * @param newClause
+	 * @param newClause neue KLausel
 	 */
 	public void initNewClause(Clause currentClause){
 		ClauseState currentState = currentClause.initWatch(variables);
 		if (currentState == ClauseState.UNIT) {
 			this.units.addElement(currentClause);
 			this.clauses.addElement(currentClause);
-		} else if (currentState == ClauseState.EMPTY) {
-			throw new IllegalStateException();
 		} else {
 			this.clauses.addElement(currentClause);
 		}
@@ -191,25 +183,7 @@ public class ClauseSet {
 		return res;
 	}
 
-	/**
-	 * Erhöht die Aktivität einer variablen
-	 */
-	public void increaseAcitivty(){
-		for(Integer entry : variables.keySet()){
-			variables.get(entry).computeAcitivity(INCREASE_FACTOR);
-		}
-	}
 
-	/**
-	 * Senkt die Aktivität einer Variablen
-	 */
-	public void decreaseAcitivty(){
-		for(Integer entry : variables.keySet()){
-			variables.get(entry).computeAcitivity(DECREASE_FACTOR);
-		}
-	}
-
-	//TODO Happens twice?
 	public HashMap<Integer, Variable> getVariables(){
 		return variables;
 	}
