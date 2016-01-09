@@ -74,7 +74,7 @@ public class CDCL {
 
 	/**
 	 * Findet die 1UIP Clause durch abbauen des Stacks und resolvieren der reasons
-	 * 
+	 * Hierbei werden die Originalen KLauseln der neuen Klausel in der KLuasel getracked
 	 * @param conflict
 	 *            Conflict Klausel für Empty Klausel
 	 * @param reason
@@ -83,11 +83,17 @@ public class CDCL {
 	 */
 	public Clause get1UIP(Clause conflict, Clause reason) {
 		Clause newClause = resolve(conflict, reason);
+		newClause.addOrigClauses(conflict);
+		newClause.addOrigClauses(reason);
 		while (!is1UIP(newClause)) {
 			final Variable cv = chooseLiteral(newClause);
+			HashSet<Clause> origClauses = newClause.getOriginalClauses();
 			newClause = resolve(newClause, cv.reason);
+			newClause.addOrigClauses(origClauses);
+			newClause.addOrigClauses(cv.reason);
 			cv.unAssign(variables);
 		}
+		//System.out.println(newClause.getOriginalClauses());
 		return newClause;
 	}
 
@@ -125,7 +131,7 @@ public class CDCL {
 		lv.unAssign(variables);
 
 		Clause newClause = get1UIP(conflict, reason);
-		System.out.println("Learn: " + newClause);
+	//	System.out.println("Learn: " + newClause);
 		learnNewUnitClause(newClause);
 		return computeBacktrackLevel(newClause);
 	}
@@ -192,7 +198,7 @@ public class CDCL {
 				level = variableLevel;
 			}
 		}
-		System.out.println("Backtrack level: " + level);
+		//System.out.println("Backtrack level: " + level);
 		return level;
 	}
 
@@ -219,9 +225,9 @@ public class CDCL {
 	/**Löst die gegebene SAT instanz
 	 * @return true wenn die Instannz lösbar ist, sonst false
 	 */
-	public boolean solve() {
+	public HashSet<Clause> solve() {
 		while (true) {
-			System.out.println();
+			//System.out.println();
 			Clause emptyClause = this.clauses.unitPropagation(stack, currentDecisionLevel);
 			if (emptyClause != null) {
 				// After a conflict, we will do a back jump, so the units will
@@ -230,18 +236,18 @@ public class CDCL {
 
 				int returnedLevel = analyseConflict(emptyClause);
 				if (returnedLevel == -1) {
-					return false;
+					return lastLearned.getOriginalClauses();
 				}
 				backtrackToLevel(returnedLevel);
 			} else if (clauses.allClausesAreSAT()) {
-				return true;
+				return null;
 			} else {
 				this.currentDecisionLevel++;
 				Variable nextVariable = getNextVar();
 				if (nextVariable == null) {
-					return false;
+					return lastLearned.getOriginalClauses();
 				}
-				System.out.println("Decision: Assign next variable to false: " + nextVariable.getId());
+				//System.out.println("Decision: Assign next variable to false: " + nextVariable.getId());
 				decreaseAcivityOfAllVariables();
 				emptyClause = nextVariable.assign(false, null, variables, units, stack, currentDecisionLevel);
 			}

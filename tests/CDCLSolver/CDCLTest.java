@@ -85,38 +85,38 @@ public class CDCLTest {
 
 	@Test
 	public void testSolveFailure() throws IOException {
-		assertFalse(new CDCL(new ClauseSet("small_aim/no/aim-50-1_6-no-1.cnf")).solve());
-		assertFalse(new CDCL(new ClauseSet("small_aim/no/aim-50-1_6-no-2.cnf")).solve());
-		assertFalse(new CDCL(new ClauseSet("small_aim/no/aim-50-1_6-no-3.cnf")).solve());
-		assertFalse(new CDCL(new ClauseSet("small_aim/no/aim-50-1_6-no-4.cnf")).solve());
-		assertFalse(new CDCL(new ClauseSet("small_aim/no/aim-50-2_0-no-1.cnf")).solve());
-		assertFalse(new CDCL(new ClauseSet("small_aim/no/aim-50-2_0-no-2.cnf")).solve());
-		assertFalse(new CDCL(new ClauseSet("small_aim/no/aim-50-2_0-no-3.cnf")).solve());
-		assertFalse(new CDCL(new ClauseSet("small_aim/no/aim-50-2_0-no-4.cnf")).solve());
+		assertNotNull(new CDCL(new ClauseSet("small_aim/no/aim-50-1_6-no-1.cnf")).solve());
+		assertNotNull(new CDCL(new ClauseSet("small_aim/no/aim-50-1_6-no-2.cnf")).solve());
+		assertNotNull(new CDCL(new ClauseSet("small_aim/no/aim-50-1_6-no-3.cnf")).solve());
+		assertNotNull(new CDCL(new ClauseSet("small_aim/no/aim-50-1_6-no-4.cnf")).solve());
+		assertNotNull(new CDCL(new ClauseSet("small_aim/no/aim-50-2_0-no-1.cnf")).solve());
+		assertNotNull(new CDCL(new ClauseSet("small_aim/no/aim-50-2_0-no-2.cnf")).solve());
+		assertNotNull(new CDCL(new ClauseSet("small_aim/no/aim-50-2_0-no-3.cnf")).solve());
+		assertNotNull(new CDCL(new ClauseSet("small_aim/no/aim-50-2_0-no-4.cnf")).solve());
 	}
 
 	@Test
 	public void testSolveSuccess() throws IOException {
-//		assertTrue(new CDCL(new ClauseSet("small_aim/yes/aim-50-1_6-yes1-1.cnf")).solve());
-		assertTrue(new CDCL(new ClauseSet("small_aim/yes/aim-50-1_6-yes1-2.cnf")).solve());
-//		assertTrue(new CDCL(new ClauseSet("small_aim/yes/aim-50-1_6-yes1-3.cnf")).solve());
-//		assertTrue(new CDCL(new ClauseSet("small_aim/yes/aim-50-1_6-yes1-4.cnf")).solve());
-//		assertTrue(new CDCL(new ClauseSet("small_aim/yes/aim-50-2_0-yes1-1.cnf")).solve());
-//		assertTrue(new CDCL(new ClauseSet("small_aim/yes/aim-50-2_0-yes1-2.cnf")).solve());
-//		assertTrue(new CDCL(new ClauseSet("small_aim/yes/aim-50-2_0-yes1-3.cnf")).solve());
-//		assertTrue(new CDCL(new ClauseSet("small_aim/yes/aim-50-2_0-yes1-4.cnf")).solve());
-//		assertTrue(new CDCL(new ClauseSet("small_aim/yes/aim-50-3_4-yes1-1.cnf")).solve());
-//		assertTrue(new CDCL(new ClauseSet("small_aim/yes/aim-50-3_4-yes1-2.cnf")).solve());
-//		assertTrue(new CDCL(new ClauseSet("small_aim/yes/aim-50-3_4-yes1-3.cnf")).solve());
-//		assertTrue(new CDCL(new ClauseSet("small_aim/yes/aim-50-3_4-yes1-4.cnf")).solve());
-//		assertTrue(new CDCL(new ClauseSet("small_aim/yes/aim-50-6_0-yes1-1.cnf")).solve());
-//		assertTrue(new CDCL(new ClauseSet("small_aim/yes/aim-50-6_0-yes1-2.cnf")).solve());
-//		assertTrue(new CDCL(new ClauseSet("small_aim/yes/aim-50-6_0-yes1-3.cnf")).solve());
-//		assertTrue(new CDCL(new ClauseSet("small_aim/yes/aim-50-6_0-yes1-4.cnf")).solve());
+		assertNull(new CDCL(new ClauseSet("small_aim/yes/aim-50-1_6-yes1-1.cnf")).solve());
+		assertNull(new CDCL(new ClauseSet("small_aim/yes/aim-50-1_6-yes1-2.cnf")).solve());
+		assertNull(new CDCL(new ClauseSet("small_aim/yes/aim-50-1_6-yes1-3.cnf")).solve());
+		assertNull(new CDCL(new ClauseSet("small_aim/yes/aim-50-1_6-yes1-4.cnf")).solve());
+		assertNull(new CDCL(new ClauseSet("small_aim/yes/aim-50-2_0-yes1-1.cnf")).solve());
+		assertNull(new CDCL(new ClauseSet("small_aim/yes/aim-50-2_0-yes1-2.cnf")).solve());
+		assertNull(new CDCL(new ClauseSet("small_aim/yes/aim-50-2_0-yes1-3.cnf")).solve());
+		assertNull(new CDCL(new ClauseSet("small_aim/yes/aim-50-2_0-yes1-4.cnf")).solve());
+		assertNull(new CDCL(new ClauseSet("small_aim/yes/aim-50-3_4-yes1-1.cnf")).solve());
+		assertNull(new CDCL(new ClauseSet("small_aim/yes/aim-50-3_4-yes1-2.cnf")).solve());
+		assertNull(new CDCL(new ClauseSet("small_aim/yes/aim-50-3_4-yes1-3.cnf")).solve());
+		assertNull(new CDCL(new ClauseSet("small_aim/yes/aim-50-3_4-yes1-4.cnf")).solve());
+		assertNull(new CDCL(new ClauseSet("small_aim/yes/aim-50-6_0-yes1-1.cnf")).solve());
+		assertNull(new CDCL(new ClauseSet("small_aim/yes/aim-50-6_0-yes1-2.cnf")).solve());
+		assertNull(new CDCL(new ClauseSet("small_aim/yes/aim-50-6_0-yes1-3.cnf")).solve());
+		assertNull(new CDCL(new ClauseSet("small_aim/yes/aim-50-6_0-yes1-4.cnf")).solve());
 	}
 	@Test
 	public void TestSolveSimple() throws IOException{
-		assertTrue(new CDCL(new ClauseSet("formula/formula02.cnf")).solve());
+		assertNull(new CDCL(new ClauseSet("formula/formula02.cnf")).solve());
 	}
 	
 

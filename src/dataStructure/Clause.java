@@ -1,6 +1,7 @@
 package dataStructure;
 
 import java.util.HashMap;
+import java.util.HashSet;
 import java.util.Vector;
 import dataStructure.Variable.State;
 
@@ -11,7 +12,10 @@ import dataStructure.Variable.State;
 public class Clause {
 	/* Literals of the clause */
 	private Vector<Integer> literals;
-
+	
+	//TODO Zugriffsmethdoen
+	private HashSet<Clause> origClauses;
+	
 	public enum ClauseState {
 		SAT, EMPTY, UNIT, SUCCESS
 	};
@@ -31,8 +35,44 @@ public class Clause {
 	public Clause(Vector<Integer> literals, HashMap<Integer, Variable> variables) {
 		this.literals = literals;
 		this.variables = variables;
+		this.origClauses = null;
 	}
 
+	/**
+	 * Combines the Sets of original Clauses with the original Clauses of the Set
+	 * 
+	 * @param origClauses
+	 */
+	public void addOrigClauses(Clause resolvedClause){
+		if(this.origClauses == null){
+			this.origClauses = new HashSet<Clause>();
+		}
+		
+		HashSet<Clause> newSet = resolvedClause.getOriginalClauses();
+		
+		//Gegebene Klausel war keine Origklause - nur die jeweiligen orignalklauseln zufügen
+		if(	newSet != null){
+			this.origClauses.addAll(newSet);
+			return;
+		}
+
+		//gegebene Klausel war eine Orginalklausel - nur die Orignalklausel zufügen
+		this.origClauses.add(resolvedClause);
+		
+	}
+	
+	
+	public void addOrigClauses(HashSet<Clause> origClauses){
+		if(this.origClauses == null){
+			this.origClauses = new HashSet<>();
+		}
+		this.getOriginalClauses().addAll(origClauses);
+	}
+	
+	public HashSet<Clause> getOriginalClauses (){
+		return this.origClauses;
+	}
+	
 	/**
 	 * Returns the literals of this clause.
 	 * 
