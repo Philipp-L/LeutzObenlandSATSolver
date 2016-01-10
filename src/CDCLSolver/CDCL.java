@@ -22,7 +22,7 @@ public class CDCL {
 	private int currentDecisionLevel;
 	private final ClauseSet clauses;
 	private final Stack<Variable> stack;
-	private final HashMap<Integer, Variable> variables;
+	protected final HashMap<Integer, Variable> variables;
 	private final Vector<Clause> units;
 	private Clause lastLearned = null;
 	
@@ -76,9 +76,9 @@ public class CDCL {
 	 * Findet die 1UIP Clause durch abbauen des Stacks und resolvieren der reasons
 	 * Hierbei werden die Originalen KLauseln der neuen Klausel in der KLuasel getracked
 	 * @param conflict
-	 *            Conflict Klausel für Empty Klausel
+	 *            Conflict Klausel fï¿½r Empty Klausel
 	 * @param reason
-	 *            Grund für Zuweißung des Conflicts
+	 *            Grund fï¿½r Zuweiï¿½ung des Conflicts
 	 * @return Neu gelernte Klausel
 	 */
 	public Clause get1UIP(Clause conflict, Clause reason) {
@@ -98,11 +98,11 @@ public class CDCL {
 	}
 
 	
-	/**Überprüft ob eine gegebene Klausel die 1UIP ist
-	 * Das kriterieum hierfür ist die Anzahl an Variablen, welche
-	 * auf höchstem Decision Level assigned wurden, ist diese 1, ist die Klausel 1UIP
+	/**ï¿½berprï¿½ft ob eine gegebene Klausel die 1UIP ist
+	 * Das kriterieum hierfï¿½r ist die Anzahl an Variablen, welche
+	 * auf hï¿½chstem Decision Level assigned wurden, ist diese 1, ist die Klausel 1UIP
 	 * 
-	 * @param clauseToCheck Klausel für die überprüft wird, ob sie 1UIP ist
+	 * @param clauseToCheck Klausel fï¿½r die ï¿½berprï¿½ft wird, ob sie 1UIP ist
 	 * @return ergebnis, ob die Klausel 1UIP war
 	 */
 	private boolean is1UIP(Clause clauseToCheck) {
@@ -115,7 +115,7 @@ public class CDCL {
 	}
 
 	/**
-	 * Erhält eine Conflict Klausel, welche den nun Empty ist Aus dem Variablen
+	 * Erhï¿½lt eine Conflict Klausel, welche den nun Empty ist Aus dem Variablen
 	 * Stack wird die Letzte Variable ausgelesen, und deren Grund,
 	 * 
 	 * @param conflict
@@ -138,7 +138,7 @@ public class CDCL {
 
 	
 	/**
-	 * Fügt eine gelernte Klausel der Klausemenge hinzu,
+	 * Fï¿½gt eine gelernte Klausel der Klausemenge hinzu,
 	 * 
 	 * @param newClause neue unit klausel die gelernt wird
 	 */
@@ -150,7 +150,7 @@ public class CDCL {
 	}
 
 	/**
-	 * Erhöt die Aktivität aller Variablen einer gegebenen KLausel
+	 * Erhï¿½t die Aktivitï¿½t aller Variablen einer gegebenen KLausel
 	 * Wird aufgerufen, nachdem die KLausel gelernt wurde
 	 * 
 	 * @param newClause gegene Klausel
@@ -163,13 +163,13 @@ public class CDCL {
 	}
 
 	/**
-	 * Sucht die nächste Variable vom Stack für eine Resolution,
+	 * Sucht die nï¿½chste Variable vom Stack fï¿½r eine Resolution,
 	 * Dies ist wichtig, falls sich durch Unitpropagation ein
-	 * verzweigter Abhänigkeitsbaum ergebene hat, es muss für die Resolution von einem 
-	 * Konflikt aus der Richtige Pfad zur 1UIP zurückverfolgt werden
+	 * verzweigter Abhï¿½nigkeitsbaum ergebene hat, es muss fï¿½r die Resolution von einem 
+	 * Konflikt aus der Richtige Pfad zur 1UIP zurï¿½ckverfolgt werden
 	 * 
-	 * @param newClause Klausel anhand dererer die 1UIP zurückverfolgt wird
-	 * @return Nächste Variable deren Reason auf dem weg zur 1uip liegt
+	 * @param newClause Klausel anhand dererer die 1UIP zurï¿½ckverfolgt wird
+	 * @return Nï¿½chste Variable deren Reason auf dem weg zur 1uip liegt
 	 */
 	private Variable chooseLiteral(Clause newClause) {
 		while(true) {
@@ -183,11 +183,11 @@ public class CDCL {
 		}
 	}
 
-	/**Gibt das Level zurück auf das gebacktrackt werden muss
-	 * Hierbei handelt es sich um das 2. höchste Level, auf dem Variablen
+	/**Gibt das Level zurï¿½ck auf das gebacktrackt werden muss
+	 * Hierbei handelt es sich um das 2. hï¿½chste Level, auf dem Variablen
 	 * der Klausel zugewiesen wurden
 	 * 
-	 * @param newClause Klausel für die das Backtracklevel gesucht wird
+	 * @param newClause Klausel fï¿½r die das Backtracklevel gesucht wird
 	 * @return das Backtracklevel
 	 */
 	private int computeBacktrackLevel(Clause newClause) {
@@ -202,8 +202,8 @@ public class CDCL {
 		return level;
 	}
 
-	/** Gibt die Nächste variable der Assigned werden soll zurück.
-	 * Die auswahl geschieht aufgrund der Aktivität
+	/** Gibt die Nï¿½chste variable der Assigned werden soll zurï¿½ck.
+	 * Die auswahl geschieht aufgrund der Aktivitï¿½t
 	 * @return die aktivste Variable
 	 */
 	private Variable getNextVar() {
@@ -222,8 +222,8 @@ public class CDCL {
 		return currentMaxVariable;
 	}
 
-	/**Löst die gegebene SAT instanz
-	 * @return true wenn die Instannz lösbar ist, sonst false
+	/**Lï¿½st die gegebene SAT instanz
+	 * @return true wenn die Instannz lï¿½sbar ist, sonst false
 	 */
 	public HashSet<Clause> solve() {
 		while (true) {
@@ -255,7 +255,7 @@ public class CDCL {
 	}
 
 	/**
-	 * Senkt die Aktivität aller Variablen um den festgelegten Faktor
+	 * Senkt die Aktivitï¿½t aller Variablen um den festgelegten Faktor
 	 * Wird aufgerufen wenn eine neue Variable durch Decision gelernt wird
 	 */
 	private void decreaseAcivityOfAllVariables() {
@@ -265,7 +265,7 @@ public class CDCL {
 		}
 	}
 
-	/** Löst alle bis zum gegebene level assigned variablen wieder aus dem Stack
+	/** Lï¿½st alle bis zum gegebene level assigned variablen wieder aus dem Stack
 	 * @param level level auf das gebacktracked wird
 	 */
 	private void backtrackToLevel(int level) {
@@ -274,7 +274,7 @@ public class CDCL {
 		}
 		this.currentDecisionLevel = level;
 		lastLearned.reWatch(variables, 0);
-		System.out.println("Last learned after backtracking: " + lastLearned);
+		//System.out.println("Last learned after backtracking: " + lastLearned);
 	}
 
 	private String stackToString() {

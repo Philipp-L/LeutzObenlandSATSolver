@@ -13,6 +13,8 @@ public class Clause {
 	/* Literals of the clause */
 	private Vector<Integer> literals;
 	
+	public boolean isHard = false;
+	
 	//TODO Zugriffsmethdoen
 	private HashSet<Clause> origClauses;
 	
@@ -23,8 +25,10 @@ public class Clause {
 	/* 2 Beobachtete Literale */
 	int lit1, lit2;
 
-	HashMap<Integer, Variable> variables;
+	public HashMap<Integer, Variable> variables;
 
+	
+	
 	/**
 	 * Creates a new clause with the given literals.
 	 * 
@@ -50,13 +54,13 @@ public class Clause {
 		
 		HashSet<Clause> newSet = resolvedClause.getOriginalClauses();
 		
-		//Gegebene Klausel war keine Origklause - nur die jeweiligen orignalklauseln zufügen
+		//Gegebene Klausel war keine Origklause - nur die jeweiligen orignalklauseln zufï¿½gen
 		if(	newSet != null){
 			this.origClauses.addAll(newSet);
 			return;
 		}
 
-		//gegebene Klausel war eine Orginalklausel - nur die Orignalklausel zufügen
+		//gegebene Klausel war eine Orginalklausel - nur die Orignalklausel zufï¿½gen
 		this.origClauses.add(resolvedClause);
 		
 	}
