@@ -1,8 +1,8 @@
 package dataStructure;
 
 import java.io.IOException;
+import java.util.Collection;
 import java.util.HashMap;
-import java.util.LinkedList;
 import java.util.Stack;
 import java.util.Vector;
 
@@ -54,6 +54,17 @@ public class ClauseSet {
 		init(clauses.toArray(new Clause[clauses.size()]));
 	}
 
+	public void reset() {
+		for (Variable variable : variables.values()) {
+			variable.reset();
+		}
+		for (Clause clause : clauses) {
+			clause.reset();
+		}
+		this.units.clear();
+		init(clauses.toArray(new Clause[clauses.size()]));
+	}
+	
 	public ClauseSet rebuildClauseSet(){
 		ClauseSet newSet = new ClauseSet();
 		
@@ -246,6 +257,10 @@ public class ClauseSet {
 		Clause lastNewClause = new Clause(blockingVariables, this.variables);
 		this.initNewClause(lastNewClause);
 		lastNewClause.isHard = true;
+	}
+
+	public Vector<Clause> getClauses() {
+		return clauses;
 	}
 }
 

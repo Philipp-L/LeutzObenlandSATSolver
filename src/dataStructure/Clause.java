@@ -42,6 +42,11 @@ public class Clause {
 		this.origClauses = null;
 	}
 
+	public void reset() {
+		this.origClauses = null;
+		isHard = false;
+	}
+
 	/**
 	 * Combines the Sets of original Clauses with the original Clauses of the Set
 	 * 
@@ -253,11 +258,11 @@ public class Clause {
 
 	@Override
 	public String toString() {
-		String res = "{ ";
+		String res = "";
 		for (Integer i : literals)
-			res += i + "("+variables.get(i).getState() +")["+(variables.get(i).reason == null ? 'd':'p')+variables.get(i).level+"]" + (lit1 == i?"lit1":"") 
-			+ (lit2==i?"lit2":"") + ", ";
-		return res + "}";
+			res += ", " + i + "("+variables.get(i).getState() +")["+(variables.get(i).reason == null ? 'd':'p')+variables.get(i).level+"]" + (lit1 == i?"lit1":"") 
+			+ (lit2==i?"lit2":"");
+		return "{ " + res.substring(2) + " }";
 	}
 
 	@Override

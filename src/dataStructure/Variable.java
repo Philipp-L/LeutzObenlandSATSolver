@@ -58,6 +58,11 @@ public class Variable {
 	}
 
 	
+	public void reset() {
+		state = State.OPEN;
+		watched.clear();
+	}
+	
 	/**
 	 * Returns the current assignment state of this variable.
 	 * 

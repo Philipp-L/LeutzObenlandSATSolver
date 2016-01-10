@@ -116,6 +116,7 @@ public class CDCLTest {
 	}
 	@Test
 	public void TestSolveSimple() throws IOException{
+		assertNotNull(new CDCL(new ClauseSet("formula/formula01.cnf")).solve());
 		assertNull(new CDCL(new ClauseSet("formula/formula02.cnf")).solve());
 	}
 	
